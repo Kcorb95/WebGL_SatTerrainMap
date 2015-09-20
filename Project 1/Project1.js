@@ -1,3 +1,5 @@
+var cols = 4, rows = 3;
+
 /* Initialize global WebGL stuff - not object specific */
 function initGL(){
     // local variable to hold a reference to an HTML5 canvas
@@ -23,8 +25,8 @@ function loadShaderProgram(gl){
 
 /* Constructor for a triangle strip object (initializes the data). */
 function TriStrip(gl, program){
-    this.gl = gl; // save my graphics context
-    this.program = program; // save my shader programs
+    this.gl = gl; // save the graphics context
+    this.program = program; // save the shader program
     this.vertices = mkStrip(); // this array will hold raw vertex positions
     this.vBufferId = this.gl.createBuffer(); // store a reference to a new buffer object
     this.gl.bindBuffer( this.gl.ARRAY_BUFFER, this.vBufferId ); // set active array buffer
@@ -59,25 +61,37 @@ function renderToContext(drawables, gl){
 
 /*Build a triangle strip with random heights. */
 function mkStrip() {
-    var x, height, n, i; //best practice in JS is to declare variables up front
+    var height, i, t=0; //best practice in JS is to declare variables up front
     var points = []; //points array to hold the individual coordinate triples
     var vertices = []; //vertices array to hold the vertices to be drawn as triangle strips
+    var triangleStrip = [];
     
-    //generate a thin 2 by 10 grid of points with random heights
-    x = -1.0;
-    for (i = 0; i < 11; i++) {
+    var vertexesForGrid = 2 * cols * (rows - 1);
+    var vertexesForStrip = 2 * cols * (rows - 1) + 2 * (rows - 2);
+
+    var numVertices = vertexesForStrip;
+
+    var y = 0.2;
+    for (i = 1; i <= vertexesForGrid; i += 2)
+    {
         height = Math.random();
-        points.push( vec3(-1.0 + i * 0.2, 0.2, height) );
+        triangleStrip.push(vec3( ((1 + i) / 2), .2, height ));
+        triangleStrip.push(vec3( ((cols * 2 + i + 1)/2), -.2, height ));
+
+        if(triangleStrip[t+1]!= cols && triangleStrip[t+1] != cols*rows)
+        {
+            triangleStrip[t + 2] = triangleStrip[t + 1];
+            triangleStrip[t + 3] = vec3( ((1 + i + 2) / 2), y, height );
+            t += 2;
+        }
+        t += 2;
+        y -= 0.4;
     }
-        for (i = 0; i < 11; i++) {
-        height = Math.random();
-        points.push( vec3((-1.0 + i * 0.2), -0.2, height) );
+
+    for (i = 0; i < numVertices; i++) {
+        vertices.push(triangleStrip[i], triangleStrip[i + 11]);
     }
-    
-    //fill up the vertices array with the necessary points
-    for (i = 0; i < 11; i++) {
-        vertices.push(points[i], points[i+11]);
-    }
+
     return vertices;
 }
 
