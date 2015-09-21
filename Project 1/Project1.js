@@ -46,10 +46,10 @@ function renderToContext(drawables, gl) {
 }
 
 /* Constructor for a triangle strip object (initializes the data). */
-function TriStrip(gl, program, color) {
+function TriStrip(yVal, gl, program, color) {
     this.program = program; // save my shader program
     this.color = color; // the color of this triangle strip surface
-    this.vertices = mkStrip(); // this array will hold raw vertex positions
+    this.vertices = mkStrip(yVal); // this array will hold raw vertex positions
     this.vBufferId = gl.createBuffer(); // reserve a buffer object and store a reference to it
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set active array buffer
@@ -74,43 +74,19 @@ TriStrip.prototype.draw = function (gl) {
 }
 
 /* Build a triangle strip with random heights. */
-function mkStrip() {
-    var height, i; // best practice in JS is to declare our variables up front
+function mkStrip(yVal) {
+    var h, i; // best practice in JS is to declare our variables up front
     var points = []; // to hold the individual coordinate triples
     var vertices = []; // to hold the vertices to be drawn as tri-strips
-    var triangleStrip = [];
-    var cols = 4, rows = 3;
-
-    var numVertGrid = 2 * cols * (rows - 1);
-    var numVertStrip = 2 * cols * (rows - 1) + 2 * (rows - 2);
-    numVertices = numVertStrip;
-    var j = 0;
-    var y = 1;
-    for (var i = 1; i <= numVertGrid; i += 2) {
-        height = Math.random();
-        triangleStrip.push(vec3(((1 + i) / 2), y, height));
-        triangleStrip.push(vec3(((cols * 2 + i + 1) / 2), y-0.4, height));
-        if (triangleStrip[j + 1] % cols == 0) {//wont be able to do anything because datatype is vec3 not a number mv.js might have something
-            if (triangleStrip[j + 1] != cols && triangleStrip[j + 1] != cols * rows) {
-                triangleStrip.push(triangleStrip[j + 1]);
-                triangleStrip.push(vec3(((1 + i + 2) / 2), y-0.8, height));
-                j += 2;
-            }
-        }
-        y-=0.4
-        j += 2;
-    }
-
-
     // generate a thin 2x10 grid of points with random heights
-        for (i = 0; i < 11; i++) {
-            height = Math.random();
-            points.push(vec3(-1.0 + i * 0.2, .2, height));
-        }
-        for (i = 0; i < 11; i++) {
-            height = Math.random();
-            points.push(vec3(-1.0 + i * 0.2, -.2, height));
-        }
+    for (i = 0; i < 11; i++) {
+        h = Math.random();
+        points.push(vec3(-1.0 + i * 0.2, yVal, h));
+    }
+    for (i = 0; i < 11; i++) {
+        h = Math.random();
+        points.push(vec3(-1.0 + i * 0.2, yVal-0.2, h));
+    }
 
     // fill up the vertices array with the necessary points
     for (i = 0; i < 11; i++) {
@@ -140,7 +116,17 @@ window.onload = function () {
     var drawables = []; // used to store a list of objects that need to be drawn
 
     // create a triangle strip object and add it to the list
-    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1)));
+    drawables.push(new TriStrip(1, gl, prog, vec4(1, 0, 0, 1)));
+    drawables.push(new TriStrip(.8, gl, prog, vec4(1, 0, 0, 1)));
+    drawables.push(new TriStrip(.6, gl, prog, vec4(1, 0, 0, 1)));
+    drawables.push(new TriStrip(.4, gl, prog, vec4(1, 0, 0, 1)));
+    drawables.push(new TriStrip(.2, gl, prog, vec4(1, 0, 0, 1)));
+    drawables.push(new TriStrip(0, gl, prog, vec4(1, 0, 0, 1)));
+    drawables.push(new TriStrip(-.2, gl, prog, vec4(1, 0, 0, 1)));
+    drawables.push(new TriStrip(-.4, gl, prog, vec4(1, 0, 0, 1)));
+    drawables.push(new TriStrip(-.6, gl, prog, vec4(1, 0, 0, 1)));
+    drawables.push(new TriStrip(-.8, gl, prog, vec4(1, 0, 0, 1)));
+
 
     renderToContext(drawables, gl); // start drawing the scene
 }
