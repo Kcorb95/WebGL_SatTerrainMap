@@ -120,7 +120,7 @@ window.onload = function () {
                           document.getElementById("blueIn2").value,
                           1.0);
         drawables.forEach(function (obj) {
-            obj.color = color;
+            obj.color2 = color2;
         });
     });
 
