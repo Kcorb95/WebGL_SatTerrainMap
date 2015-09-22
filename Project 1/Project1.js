@@ -46,9 +46,10 @@ function renderToContext(drawables, gl) {
 }
 
 /* Constructor for a triangle strip object (initializes the data). */
-function TriStrip(gl, program, color, yVal) {
+function TriStrip(gl, program, color, color2, yVal) {
     this.program = program; // save my shader program
     this.color = color; // the color of this triangle strip surface
+    this.color2 = color2;
     this.vertices = mkStrip(yVal); // this array will hold raw vertex positions
     this.vBufferId = gl.createBuffer(); // reserve a buffer object and store a reference to it
 
@@ -67,7 +68,7 @@ TriStrip.prototype.draw = function (gl) {
     gl.vertexAttribPointer(this.program.vposLoc, 3, gl.FLOAT, false, 0, 0);
 
     // send this object's color down to the GPU as a uniform variable
-    gl.uniform4fv(this.program.colorLoc, flatten(this.color));
+    gl.uniform4fv(this.program.colorLoc, flatten(this.color), flatten(this.color2));
 
     // render the primitives!
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.vertices.length);
@@ -114,7 +115,7 @@ window.onload = function () {
     });
 
     document.getElementById("colorBtn2").addEventListener("click", function () {
-        var color = vec4(document.getElementById("redIn2").value,
+        var color2 = vec4(document.getElementById("redIn2").value,
                           document.getElementById("greenIn2").value,
                           document.getElementById("blueIn2").value,
                           1.0);
@@ -126,16 +127,16 @@ window.onload = function () {
     var drawables = []; // used to store a list of objects that need to be drawn
 
     // create 10 triangle strip objects and add them to the list
-    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), 1));
-    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), .8));
-    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), .6));
-    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), .4));
-    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), .2));
-    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), 0));
-    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), -.8));
-    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), -.6));
-    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), -.4));
-    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), -.2));
+    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), vec4(1, 0, 0, 1), 1));
+    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), vec4(1, 0, 0, 1), .8));
+    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), vec4(1, 0, 0, 1), .6));
+    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), vec4(1, 0, 0, 1), .4));
+    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), vec4(1, 0, 0, 1), .2));
+    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), vec4(1, 0, 0, 1), 0));
+    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), vec4(1, 0, 0, 1), -.8));
+    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), vec4(1, 0, 0, 1), -.6));
+    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), vec4(1, 0, 0, 1), -.4));
+    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), vec4(1, 0, 0, 1), -.2));
 
 
     renderToContext(drawables, gl); // start drawing the scene
