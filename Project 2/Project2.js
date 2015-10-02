@@ -2,7 +2,8 @@ var projection; // global variable to hold the projection matrix
 // Set up a simple oblique, orthographic projection matrix
 projection = ortho(-10, 10, -10, 10, -10, 10);
 projection = mult(projection, rotate(-75, vec3(1, 0, 0)));
-projection = mult(projection, rotate(30, vec3(0, 0, 1)));
+projection = mult(projection, rotate(30, vec3(0, 0, 1)));
+
 /* Initialize global WebGL stuff - not object specific */
 function initGL() {
     // local variable to hold a reference to an HTML5 canvas
@@ -31,7 +32,8 @@ function loadShaderProgram(gl) {
     program.colorLoc = gl.getUniformLocation(program, "color");
 
     // get the address of the uniform variable and save it to our program object
-    program.projLoc = gl.getUniformLocation(program, "proj");
+    program.projLoc = gl.getUniformLocation(program, "proj");
+
 
     return program; // send this back so that other parts of the program can use it
 }
@@ -102,17 +104,17 @@ function mkStrip() {
 
     // fill up the vertices array with the necessary points
     for (i = 0; i < N; i++) {
-        vertices.push(points[i], points[i+N]);
+        vertices.push(points[i], points[i + N]);
     }
-    for (j = 1; j < (N-1); j++) {
-        vertices.push(points[(j+1)*N-1], points[j*N]);
+    for (j = 1; j < (N - 1) ; j++) {
+        vertices.push(points[(j + 1) * N - 1], points[j * N]);
         for (i = 0; i < N; i++) {
-            vertices.push(points[i+j*N], points[i+(j+1)*N]);
+            vertices.push(points[i + j * N], points[i + (j + 1) * N]);
         }
     }
     console.log(points.length);
     console.log(vertices.length);
-    
+
     return vertices;
 }
 
