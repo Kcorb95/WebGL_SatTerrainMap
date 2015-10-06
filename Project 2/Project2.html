@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html>
 <head>
     <title>WebGL Triangle Strip Grid</title>
@@ -12,8 +12,8 @@
         attribute vec4 vPosition; // vert attribs bound to array buffer data
         uniform vec4 color; // uniform value shared across all vertices
         varying vec4 vColor; // sent down to later stages of the pipeline
-        uniform mat4 proj; // uniform matrix for viewing projection
-        //uniform mat4 rotate;
+        uniform mat4 projectionMatrix; // uniform matrix for viewing projection
+        uniform mat4 modelViewMatrix;
 
         void main()
         {
@@ -25,8 +25,7 @@
 
         // some per-object matrix ops now done at app level
         // but final matrix chain is processed here
-        //gl_Position = proj * (vPosition*rotate);
-        gl_Position = proj * (vPosition);
+        gl_Position = projectionMatrix * modelViewMatrix * vPosition;
         }
     </script>
     <script id="fragment-shader" type="x-shader/x-fragment">

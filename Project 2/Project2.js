@@ -1,8 +1,19 @@
-var projection; // global variable to hold the projection matrix
+var projectionMatrix; // global variable to hold the projection matrix
+var modelViewMatrix;
 // Set up a simple oblique, orthographic projection matrix
-projection = ortho(-10, 10, -10, 10, -10, 10);
-projection = mult(projection, rotate(-75, vec3(1, 0, 0)));
-projection = mult(projection, rotate(30, vec3(0, 0, 1)));
+projectionMatrix = ortho(-10, 10, -10, 10, -10, 10);
+projectionMatrix = mult(projectionMatrix, rotate(-75, vec3(1, 0, 0)));
+projectionMatrix = mult(projectionMatrix, rotate(30, vec3(0, 0, 1)));
+
+var radius = 6.0;
+
+var phi = 0.0;
+var theta  = 0.0;
+var dr = 5.0 * Math.PI/180.0;
+
+const at = vec3(0.0, 0.0, 0.0);
+const up = vec3(0.0, 1.0, 0.0);
+
 
 /* Initialize global WebGL stuff - not object specific */
 function initGL() {
@@ -32,7 +43,8 @@ function loadShaderProgram(gl) {
     program.colorLoc = gl.getUniformLocation(program, "color");
 
     // get the address of the uniform variable and save it to our program object
-    program.projLoc = gl.getUniformLocation(program, "proj");
+    program.projLoc = gl.getUniformLocation(program, "projectionMatrix");
+    program.modVLoc = gl.getUniformLocation(program, "modelViewMatrix");
 
 
     return program; // send this back so that other parts of the program can use it
@@ -46,7 +58,7 @@ function renderToContext(drawables, gl) {
     }
 
     // start from a clean frame buffer for this frame
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     drawables.forEach(function (obj) { // loop over all objects and draw each
         obj.draw(gl);
@@ -81,9 +93,16 @@ TriStrip.prototype.draw = function (gl) {
     // send this object's color down to the GPU as a uniform variable
     gl.uniform4fv(this.program.colorLoc, flatten(this.color), flatten(this.color2));
 
-    // send the global projection matrix to the shader program
-    gl.uniformMatrix4fv(this.program.projLoc, gl.FALSE, flatten(projection));
+    var eye = vec3( radius*Math.sin(theta)*Math.cos(phi), 
+                    radius*Math.sin(theta)*Math.sin(phi),
+                    radius*Math.cos(theta));
+    
+        modelViewMatrix = lookAt( eye, at, up );
 
+    // send the global projection matrix to the shader program
+    gl.uniformMatrix4fv(this.program.projLoc, gl.FALSE, flatten(projectionMatrix));
+    gl.uniformMatrix4fv(this.program.modVLoc, gl.FALSE, flatten(modelViewMatrix));
+    
     // render the primitives!
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.vertices.length);
 }
@@ -145,6 +164,9 @@ window.onload = function () {
             obj.color2 = color2;
         });
     });
+    
+        document.getElementById("rotateLeft").addEventListener("click", function () {phi += dr;});
+        document.getElementById("rotateRight").addEventListener("click", function () {phi -= dr;});
 
     var drawables = []; // used to store a list of objects that need to be drawn
 
