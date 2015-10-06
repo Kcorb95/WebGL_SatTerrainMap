@@ -6,13 +6,7 @@ projectionMatrix = ortho(-10, 10, -10, 10, -10, 10);
 projectionMatrix = mult(projectionMatrix, rotate(-75, vec3(1, 0, 0)));
 projectionMatrix = mult(projectionMatrix, rotate(30, vec3(0, 0, 1)));
 
-var radius = 3.0;
-var theta  = 0.0;
-var phi    = 0.0;
-var dr = 5.0 * Math.PI/180.0;
-
-const at = vec3(0.0, 0.0, 0.0);
-const up = vec3(0.0, 1.0, 0.0);
+var theta =[0, 0, 0];
 
 /* Initialize global WebGL stuff - not object specific */
 function initGL() {
@@ -63,12 +57,12 @@ function renderToContext(drawables, gl) {
         obj.draw(gl);
     });
 
-       var eye = vec3(radius*Math.sin(phi), radius*Math.sin(theta), 
-             radius*Math.cos(phi));
-
-        modelViewMatrix = lookAt(eye, at , up); 
+modelViewMatrix = mat4();
+    modelViewMatrix = mult(modelViewMatrix, rotate(theta[1], [0, 0, 1] ));
     
-    gl.uniformMatrix4fv( program.modVLoc, false, flatten(modelViewMatrix) );
+    gl.uniformMatrix4fv( gl.getUniformLocation(program,
+            "modelViewMatrix"), false, flatten(modelViewMatrix) );       
+    
     gl.uniformMatrix4fv( program.projLoc, false, flatten(projectionMatrix) );
     
     // queue up this same callback for the next frame
@@ -162,8 +156,8 @@ window.onload = function () {
         });
     });
     
-        document.getElementById("rotateLeft").addEventListener("click", function () {phi += dr;});
-        document.getElementById("rotateRight").addEventListener("click", function () {phi -= dr;});
+        document.getElementById("rotateLeft").addEventListener("click", function () {theta[1] -= 2.0;});
+        document.getElementById("rotateRight").addEventListener("click", function () {theta[1] += 2.0;});
 
     var drawables = []; // used to store a list of objects that need to be drawn
 
