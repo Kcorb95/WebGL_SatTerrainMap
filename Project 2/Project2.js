@@ -1,5 +1,6 @@
 var projectionMatrix; // global variable to hold the projection matrix
 var modelViewMatrix;
+var program;
 // Set up a simple oblique, orthographic projection matrix
 projectionMatrix = ortho(-10, 10, -10, 10, -10, 10);
 projectionMatrix = mult(projectionMatrix, rotate(-75, vec3(1, 0, 0)));
@@ -34,7 +35,7 @@ function initGL() {
 /* Load shaders and initialize attribute pointers. */
 function loadShaderProgram(gl) {
     // use the existing program if given, otherwise use our own defaults
-    var program = initShaders(gl, "vertex-shader", "fragment-shader");
+    program = initShaders(gl, "vertex-shader", "fragment-shader");
     // get the position attribute and save it to our program object
     //   then enable the vertex attribute array
     program.vposLoc = gl.getAttribLocation(program, "vPosition");
@@ -64,6 +65,15 @@ function renderToContext(drawables, gl) {
         obj.draw(gl);
     });
 
+    var eye = vec3( radius*Math.sin(theta)*Math.cos(phi), 
+                    radius*Math.sin(theta)*Math.sin(phi),
+                    radius*Math.cos(theta));
+    
+    modelViewMatrix = lookAt( eye, at, up );
+    
+    gl.uniformMatrix4fv( program.modVLoc, false, flatten(modelViewMatrix) );
+    gl.uniformMatrix4fv( program.projLoc, false, flatten(projectionMatrix) );
+    
     // queue up this same callback for the next frame
     requestAnimFrame(renderScene);
 }
@@ -92,16 +102,6 @@ TriStrip.prototype.draw = function (gl) {
 
     // send this object's color down to the GPU as a uniform variable
     gl.uniform4fv(this.program.colorLoc, flatten(this.color), flatten(this.color2));
-
-    var eye = vec3( radius*Math.sin(theta)*Math.cos(phi), 
-                    radius*Math.sin(theta)*Math.sin(phi),
-                    radius*Math.cos(theta));
-    
-        modelViewMatrix = lookAt( eye, at, up );
-
-    // send the global projection matrix to the shader program
-    gl.uniformMatrix4fv(this.program.projLoc, gl.FALSE, flatten(projectionMatrix));
-    gl.uniformMatrix4fv(this.program.modVLoc, gl.FALSE, flatten(modelViewMatrix));
     
     // render the primitives!
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.vertices.length);
@@ -165,8 +165,8 @@ window.onload = function () {
         });
     });
     
-        document.getElementById("rotateLeft").addEventListener("click", function () {phi += dr;});
-        document.getElementById("rotateRight").addEventListener("click", function () {phi -= dr;});
+        document.getElementById("rotateLeft").addEventListener("click", function () {theta -= dr;});
+        document.getElementById("rotateRight").addEventListener("click", function () {theta += dr;});
 
     var drawables = []; // used to store a list of objects that need to be drawn
 
