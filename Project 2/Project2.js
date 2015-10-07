@@ -100,30 +100,20 @@ TriStrip.prototype.draw = function (gl) {
 /* Build a triangle strip with random heights. */
 function mkStrip() {
     var N = 11, h, i, j; // best practice in JS is to declare our variables up front n++ = bigger grid currently n -1 = size (n-1)x(n-1)
-    var x = ncols, y = nrows;//x = ncols y = nrows
     var points = []; // to hold the individual coordinate triples
     var vertices = []; // to hold the vertices to be drawn as tri-strips
     
-    console.log(x + " " + y);
     
     // generate a thin 10x10 grid (really 11x11 points) with random heights
-    for (j = 0; j < y; j++) {
-        for (i = 0; i < x; i++) {
+    for (j = 0; j < nrows+1; j++) {
+        for (i = 0; i < ncols+1; i++) {
             h = Math.random();//-vvvv (x)    (y)      (z)  get the ncols for x and nrows for y? -vvvvvvv
-            points.push(vec3(-100 + i * 2, -100 + j * 2, h)); // NEW! scale grid by 10 in X and Y
+            vertices.push(vec3(-xres + i * 2, -yres + j * 2, h)); // NEW! scale grid by 10 in X and Y
         }
     }
 
     // fill up the vertices array with the necessary points
-    for (i = 0; i < y; i++) {
-        vertices.push(points[i], points[i + y]);
-    }
-    for (j = 1; j < (x -1) ; j++) {
-        vertices.push(points[(j + 1) * x - 1], points[j * y]);
-        for (i = 0; i < y; i++) {
-            vertices.push(points[i + j * x], points[i + (j + 1) * y]);
-        }
-    }
+
     console.log(points.length);
     console.log(vertices.length);
 
