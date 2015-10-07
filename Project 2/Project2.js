@@ -2,7 +2,7 @@ var projectionMatrix; // global variable to hold the projection matrix
 var modelViewMatrix;
 var program;
 // Set up a simple oblique, orthographic projection matrix
-projectionMatrix = ortho(-10, 10, -10, 10, -10, 10);
+projectionMatrix = ortho(-100, 100, -10, 10, -50, 50);
 projectionMatrix = mult(projectionMatrix, rotate(-75, vec3(1, 0, 0)));
 projectionMatrix = mult(projectionMatrix, rotate(30, vec3(0, 0, 1)));
 
@@ -57,8 +57,7 @@ function renderToContext(drawables, gl) {
         obj.draw(gl);
     });
 
-modelViewMatrix = mat4();
-    modelViewMatrix = mult(modelViewMatrix, rotate(theta[1], [0, 0, 1] ));
+    modelViewMatrix = rotate(theta[1], [0, 0, 1] );
     
     gl.uniformMatrix4fv( gl.getUniformLocation(program,
             "modelViewMatrix"), false, flatten(modelViewMatrix) );       
@@ -100,26 +99,29 @@ TriStrip.prototype.draw = function (gl) {
 
 /* Build a triangle strip with random heights. */
 function mkStrip() {
-    var N = 11, h, i, j; // best practice in JS is to declare our variables up front
+    var N = 11, h, i, j; // best practice in JS is to declare our variables up front n++ = bigger grid currently n -1 = size (n-1)x(n-1)
+    var x = ncols, y = nrows;//x = ncols y = nrows
     var points = []; // to hold the individual coordinate triples
     var vertices = []; // to hold the vertices to be drawn as tri-strips
-
+    
+    console.log(x + " " + y);
+    
     // generate a thin 10x10 grid (really 11x11 points) with random heights
-    for (j = 0; j < N; j++) {
-        for (i = 0; i < N; i++) {
-            h = Math.random();
-            points.push(vec3(-10 + i * 2, -10 + j * 2, h)); // NEW! scale grid by 10 in X and Y
+    for (j = 0; j < y; j++) {
+        for (i = 0; i < x; i++) {
+            h = Math.random();//-vvvv (x)    (y)      (z)  get the ncols for x and nrows for y? -vvvvvvv
+            points.push(vec3(-100 + i * 2, -100 + j * 2, h)); // NEW! scale grid by 10 in X and Y
         }
     }
 
     // fill up the vertices array with the necessary points
-    for (i = 0; i < N; i++) {
-        vertices.push(points[i], points[i + N]);
+    for (i = 0; i < y; i++) {
+        vertices.push(points[i], points[i + y]);
     }
-    for (j = 1; j < (N - 1) ; j++) {
-        vertices.push(points[(j + 1) * N - 1], points[j * N]);
-        for (i = 0; i < N; i++) {
-            vertices.push(points[i + j * N], points[i + (j + 1) * N]);
+    for (j = 1; j < (x -1) ; j++) {
+        vertices.push(points[(j + 1) * x - 1], points[j * y]);
+        for (i = 0; i < y; i++) {
+            vertices.push(points[i + j * x], points[i + (j + 1) * y]);
         }
     }
     console.log(points.length);
