@@ -99,21 +99,19 @@ TriStrip.prototype.draw = function (gl) {
 
 /* Build a triangle strip with random heights. */
 function mkStrip() {
-    var N = 11, h, i, j; // best practice in JS is to declare our variables up front n++ = bigger grid currently n -1 = size (n-1)x(n-1)
+    var h, i, j; // best practice in JS is to declare our variables up front n++ = bigger grid currently n -1 = size (n-1)x(n-1)
     var points = []; // to hold the individual coordinate triples
     var vertices = []; // to hold the vertices to be drawn as tri-strips
     
     
-    // generate a thin 10x10 grid (really 11x11 points) with random heights
+    // generate a thin grid using the number of rows and columns from dat file with random heights
     for (j = 0; j < nrows+1; j++) {
         for (i = 0; i < ncols+1; i++) {
             h = Math.random();//-vvvv (x)    (y)      (z)  get the ncols for x and nrows for y? -vvvvvvv
-            vertices.push(vec3(-xres + i * 2, -yres + j * 2, h)); // NEW! scale grid by 10 in X and Y
+            vertices.push(vec3(-xres + i * 2, -yres + j * 2, h)); // NEW! scale grid by the x res and y res
         }
     }
-
-    // fill up the vertices array with the necessary points
-
+    console.log(heights.length);
     console.log(points.length);
     console.log(vertices.length);
 
