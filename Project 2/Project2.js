@@ -102,9 +102,9 @@ function mkStrip() {
     // generate a thin grid using the number of rows and columns from dat file with random heights
     for (var y = 0; y < nrows + 1; y++) {
         for (var x = 0; x < ncols + 1; x++) {
-           // zHeight = heights[y][x];
+           //zHeight = heights[y][x];
             zHeight = Math.random();//TODO get from data file
-            vertices.push(vec3(xmin + x * 2, ymin + y * 2, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+            vertices.push(vec3(xmin + x, ymin + y, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
             xmin += xres;
             ymin += yres;
         }
