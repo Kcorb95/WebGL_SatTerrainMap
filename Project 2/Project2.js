@@ -3,7 +3,7 @@ var modelViewMatrix;
 var program;
 // Set up a simple oblique, orthographic projection matrix
                      //left,right,bottom,top,near,far
-projectionMatrix = ortho(-1500, 1500, -1500, 1500, -50000, 50000);
+projectionMatrix = ortho(-30000, 30000, -30000, 30000, -500000, 500000);
 projectionMatrix = mult(projectionMatrix, rotate(-75, vec3(1, 0, 0)));
 projectionMatrix = mult(projectionMatrix, rotate(30, vec3(0, 0, 1)));
 
@@ -96,17 +96,15 @@ TriStrip.prototype.draw = function (gl) {
 
 /* Build a triangle strip with random heights. */
 function mkStrip() {
-    var zHeight; // best practice in JS is to declare our variables up front n++ = bigger grid currently n -1 = size (n-1)x(n-1)
     var vertices = []; // to hold the vertices to be drawn as tri-strips
     
     // generate a thin grid using the number of rows and columns from dat file with random heights
-    for (var y = 0; y < nrows + 1; y++) {
-        for (var x = 0; x < ncols + 1; x++) {
-           //zHeight = heights[y][x];
-            zHeight = Math.random();//TODO get from data file
-            vertices.push(vec3(xmin + x, ymin + y, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-            xmin += xres;
-            ymin += yres;
+    for (var i = 0; i < nrows; i++) {
+        for (var j = 0; j < ncols; j++) {
+           var zHeight = heights[j][i];
+            //var zHeight = Math.random();//TODO get from data file
+            vertices.push(vec3(xmin + i * xres, ymin + j * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+
         }
     }
     console.log("heights length: " + heights[0].length + heights.length); //heights is a 2d array
