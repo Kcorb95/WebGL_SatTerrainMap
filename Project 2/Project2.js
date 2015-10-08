@@ -3,7 +3,7 @@ var modelViewMatrix;
 var program;
 // Set up a simple oblique, orthographic projection matrix
                      //left,right,bottom,top,near,far
-projectionMatrix = ortho(-5, 5, -5, 5, -50, 50);
+projectionMatrix = ortho(-1500, 1500, -1500, 1500, -50000, 50000);
 projectionMatrix = mult(projectionMatrix, rotate(-75, vec3(1, 0, 0)));
 projectionMatrix = mult(projectionMatrix, rotate(30, vec3(0, 0, 1)));
 
@@ -36,10 +36,9 @@ function loadShaderProgram(gl) {
     // get the address of the uniform variable and save it to our program object
     program.colorLoc = gl.getUniformLocation(program, "color");
 
-    // get the address of the uniform variable and save it to our program object
+    // get the address of the uniform variables and save it to our program object
     program.projLoc = gl.getUniformLocation(program, "projectionMatrix");
     program.modVLoc = gl.getUniformLocation(program, "modelViewMatrix");
-
 
     return program; // send this back so that other parts of the program can use it
 }
@@ -78,7 +77,6 @@ function TriStrip(gl, program, color, color2) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set active array buffer
     // pass data to the graphics hardware (convert JS Array to a typed array)
     gl.bufferData(gl.ARRAY_BUFFER, flatten(this.vertices), gl.STATIC_DRAW);
-
 }
 
 /* Method allows an object to render itself */
@@ -98,15 +96,17 @@ TriStrip.prototype.draw = function (gl) {
 
 /* Build a triangle strip with random heights. */
 function mkStrip() {
-    var height, i, j; // best practice in JS is to declare our variables up front n++ = bigger grid currently n -1 = size (n-1)x(n-1)
+    var zHeight; // best practice in JS is to declare our variables up front n++ = bigger grid currently n -1 = size (n-1)x(n-1)
     var vertices = []; // to hold the vertices to be drawn as tri-strips
     
     // generate a thin grid using the number of rows and columns from dat file with random heights
-    for (j = 0; j < nrows + 1; j++) {
-        for (i = 0; i < ncols + 1; i++) {
-            height = Math.random();//TODO get from data file
-                               //-vvvv (x)         (y)             (z)  get the ncols for x and nrows for y? -vvvvvvv
-            vertices.push(vec3(xmin + i + xres, ymin + j + yres, height)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+    for (var y = 0; y < nrows + 1; y++) {
+        for (var x = 0; x < ncols + 1; x++) {
+           // zHeight = heights[y][x];
+            zHeight = Math.random();//TODO get from data file
+            vertices.push(vec3(xmin + x * 2, ymin + y * 2, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+            xmin += xres;
+            ymin += yres;
         }
     }
     console.log("heights length: " + heights[0].length + heights.length); //heights is a 2d array
@@ -143,14 +143,14 @@ window.onload = function () {
         });
     });
     
-        document.getElementById("rotateLeft").addEventListener("click", function () {theta[1] -= 2.0;});
-        document.getElementById("rotateRight").addEventListener("click", function () {theta[1] += 2.0;});
+    document.getElementById("rotateLeft").addEventListener("click", function () { theta[1] -= 2.0; });
+
+    document.getElementById("rotateRight").addEventListener("click", function () { theta[1] += 2.0; });
 
     var drawables = []; // used to store a list of objects that need to be drawn
 
-    // create a triangle strip object and add it to the list
+    // create a triangle strip object and add it to the list of objects to draw
     drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), vec4(1, 0, 0, 1)));
-
 
     renderToContext(drawables, gl); // start drawing the scene
 }
