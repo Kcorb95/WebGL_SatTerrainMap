@@ -2,11 +2,12 @@ var projectionMatrix; // global variable to hold the projection matrix
 var modelViewMatrix;
 var program;
 // Set up a simple oblique, orthographic projection matrix
-projectionMatrix = ortho(-10, 10, -10, 10, -50, 50);
+                     //left,right,bottom,top,near,far
+projectionMatrix = ortho(-5, 5, -5, 5, -50, 50);
 projectionMatrix = mult(projectionMatrix, rotate(-75, vec3(1, 0, 0)));
 projectionMatrix = mult(projectionMatrix, rotate(30, vec3(0, 0, 1)));
 
-var theta =[0, 0, 0];
+var theta =[0, 0, 0];//Can be later changed if needed to rotate on multiple different axis
 
 /* Initialize global WebGL stuff - not object specific */
 function initGL() {
@@ -57,11 +58,9 @@ function renderToContext(drawables, gl) {
         obj.draw(gl);
     });
 
-    modelViewMatrix = rotate(theta[1], [0, 0, 1] );
+    modelViewMatrix = rotate(theta[1], [0, 0, 1] );//rotates the model around the z axis
     
-    gl.uniformMatrix4fv( gl.getUniformLocation(program,
-            "modelViewMatrix"), false, flatten(modelViewMatrix) );       
-    
+    gl.uniformMatrix4fv( gl.getUniformLocation(program, "modelViewMatrix"), false, flatten(modelViewMatrix) );       
     gl.uniformMatrix4fv( program.projLoc, false, flatten(projectionMatrix) );
     
     // queue up this same callback for the next frame
@@ -99,19 +98,19 @@ TriStrip.prototype.draw = function (gl) {
 
 /* Build a triangle strip with random heights. */
 function mkStrip() {
-    var h, i, j; // best practice in JS is to declare our variables up front n++ = bigger grid currently n -1 = size (n-1)x(n-1)
+    var height, i, j; // best practice in JS is to declare our variables up front n++ = bigger grid currently n -1 = size (n-1)x(n-1)
     var vertices = []; // to hold the vertices to be drawn as tri-strips
-    
     
     // generate a thin grid using the number of rows and columns from dat file with random heights
     for (j = 0; j < nrows + 1; j++) {
         for (i = 0; i < ncols + 1; i++) {
-            h = Math.random();//-vvvv (x)    (y)      (z)  get the ncols for x and nrows for y? -vvvvvvv
-            vertices.push(vec3(xmin + i + xres, ymin + j +yres, h)); // NEW! scale grid by the x res and y res
+            height = Math.random();//TODO get from data file
+                               //-vvvv (x)         (y)             (z)  get the ncols for x and nrows for y? -vvvvvvv
+            vertices.push(vec3(xmin + i + xres, ymin + j + yres, height)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
         }
     }
-    console.log(heights.length);
-    console.log(vertices.length);
+    console.log("heights length: " + heights[0].length + heights.length); //heights is a 2d array
+    console.log("Vertices length: " + vertices.length);
 
     return vertices;
 }
