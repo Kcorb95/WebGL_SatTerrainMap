@@ -109,7 +109,9 @@ function mkStrip() {
         for (var j = 0; j < ncols; j++) {
             var zHeight = heights[j][i];
             vertices.push(vec3(xmin + i * xres, ymin + j * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+            vertices.push(vec3(xmin + (i+1) * xres, ymin + j * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
         }
+        // need to repeat the ending points to make degenerate triangle ("stutter"), this will be two extra vertices
     }
     console.log("heights length: " + heights[0].length + heights.length); //heights is a 2d array
     console.log("Vertices length: " + vertices.length);
@@ -145,9 +147,9 @@ window.onload = function () {
         });
     });
     
-    document.getElementById("rotateLeft").addEventListener("click", function () { theta[1] -= 2.0; });
+    document.getElementById("rotateLeft").addEventListener("click", function () { theta[1] -= 5.0; });
 
-    document.getElementById("rotateRight").addEventListener("click", function () { theta[1] += 2.0; });
+    document.getElementById("rotateRight").addEventListener("click", function () { theta[1] += 5.0; });
 
     var drawables = []; // used to store a list of objects that need to be drawn
 
