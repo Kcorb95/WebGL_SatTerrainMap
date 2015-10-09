@@ -33,8 +33,12 @@ function loadShaderProgram(gl) {
     //   then enable the vertex attribute array
     program.vposLoc = gl.getAttribLocation(program, "vPosition");
     gl.enableVertexAttribArray(program.vposLoc);
+    program.vpos2Loc = gl.getAttribLocation(program, "vPosition2");
+    gl.enableVertexAttribArray(program.vpos2Loc);
     // get the address of the uniform variable and save it to our program object
     program.colorLoc = gl.getUniformLocation(program, "color");
+    program.color2Loc = gl.getUniformLocation(program, "color2");
+
 
     // get the address of the uniform variables and save it to our program object
     program.projLoc = gl.getUniformLocation(program, "projectionMatrix");
@@ -86,10 +90,12 @@ TriStrip.prototype.draw = function (gl) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set pos buffer active
     // map position buffer data to the corresponding vertex shader attribute
     gl.vertexAttribPointer(this.program.vposLoc, 3, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(this.program.vpos2Loc, 3, gl.FLOAT, false, 0, 0);
 
     // send this object's color down to the GPU as a uniform variable
-    gl.uniform4fv(this.program.colorLoc, flatten(this.color), flatten(this.color2));
-    
+    gl.uniform4fv(this.program.colorLoc, flatten(this.color));
+    gl.uniform4fv(this.program.color2Loc, flatten(this.color2));
+
     // render the primitives!
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.vertices.length);
 }
@@ -101,10 +107,8 @@ function mkStrip() {
     // generate a thin grid using the number of rows and columns from dat file with random heights
     for (var i = 0; i < nrows; i++) {
         for (var j = 0; j < ncols; j++) {
-           var zHeight = heights[j][i];
-            //var zHeight = Math.random();//TODO get from data file
+            var zHeight = heights[j][i];
             vertices.push(vec3(xmin + i * xres, ymin + j * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-
         }
     }
     console.log("heights length: " + heights[0].length + heights.length); //heights is a 2d array
@@ -148,7 +152,7 @@ window.onload = function () {
     var drawables = []; // used to store a list of objects that need to be drawn
 
     // create a triangle strip object and add it to the list of objects to draw
-    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), vec4(1, 0, 0, 1)));
+    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), vec4(0, 1, 0, 1)));
 
     renderToContext(drawables, gl); // start drawing the scene
 }
