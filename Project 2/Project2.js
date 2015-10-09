@@ -33,8 +33,6 @@ function loadShaderProgram(gl) {
     //   then enable the vertex attribute array
     program.vposLoc = gl.getAttribLocation(program, "vPosition");
     gl.enableVertexAttribArray(program.vposLoc);
-    program.vpos2Loc = gl.getAttribLocation(program, "vPosition2");
-    gl.enableVertexAttribArray(program.vpos2Loc);
     // get the address of the uniform variable and save it to our program object
     program.colorLoc = gl.getUniformLocation(program, "color");
     program.color2Loc = gl.getUniformLocation(program, "color2");
