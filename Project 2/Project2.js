@@ -105,11 +105,11 @@ function mkStrip() {
     var vertices = []; // to hold the vertices to be drawn as tri-strips
     
     // generate a thin grid using the number of rows and columns from dat file with random heights
-    for (var i = 0; i < nrows; i++) {
-        for (var j = 0; j < ncols; j++) {
-            var zHeight = heights[j][i];
-            vertices.push(vec3(xmin + i * xres, ymin + j * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-            vertices.push(vec3(xmin + (i+1) * xres, ymin + j * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+    for (var i = 0; i < ncols; i++) {
+        for (var j = 0; j < nrows; j++) {
+            var zHeight = heights[i][j];
+            vertices.push(vec3(xmin + j * xres, ymin + i * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+            vertices.push(vec3(xmin + (j+1) * xres, ymin + i * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
         }
         // need to repeat the ending points to make degenerate triangle ("stutter"), this will be two extra vertices
     }
