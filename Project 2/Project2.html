@@ -1,7 +1,7 @@
 ﻿<!doctype html>
 <html>
 <head>
-    <title>WebGL Triangle Strip Grid</title>
+    <title>WebGL Terrain Height Map</title>
     <meta charset="utf-8" />
     <style type="text/css">
         canvas {
@@ -57,8 +57,36 @@
     </canvas>
     <br />
     <br />
+    
+    <input type="file" accept=".dem" id="files" name="files[]"/>
+    <output id="list"></output>
+
+    <script>
+            function handleFileSelect(evt) {
+                var files = evt.target.files; // FileList object
+
+                // files is a FileList of File objects. List some properties.
+                var output = [];
+                for (var i = 0, f; f = files[i]; i++) {
+                output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+                            f.size, ' bytes, last modified: ',
+                            f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a', '</li>');
+                }
+                document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+            }
+
+                document.getElementById('files').addEventListener('change', handleFileSelect, false);
+    </script> 
+       
     <button id="rotateLeft">Rotate Left</button> 
     <button id="rotateRight">Rotate Right</button>
+    <!-- This needs to be changed later when I figure out how to deal with the zooming-->
+    <input id="zoomSlider" type="range" min="-10" max="10" step="1" value="5">
+    <br />
+    <br />
+    <button id="perspectiveView">Switch to perspective view</button>
+    <button id="parallelView">Switch to parallel view</button>
+    <br />
     <br />
     <input id="redIn" type="text" placeholder="How much red(0-1)?" />
     <input id="greenIn" type="text" placeholder="How much green (0-1)?" />
