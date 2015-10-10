@@ -15,7 +15,9 @@
         varying vec4 vColor; // sent down to later stages of the pipeline
         uniform mat4 projectionMatrix; // uniform matrix for viewing projection
         uniform mat4 modelViewMatrix;
-
+        uniform float hmin;
+        uniform float hmax;
+        
         void main()
         {
         // blend the app-defined color with the "height" coordinate

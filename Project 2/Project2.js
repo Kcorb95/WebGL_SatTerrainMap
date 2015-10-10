@@ -3,7 +3,7 @@ var modelViewMatrix;
 var program;
 // Set up a simple oblique, orthographic projection matrix
                      //left,right,bottom,top,near,far
-projectionMatrix = ortho(-30000, 30000, -30000, 30000, -5000000, 5000000);
+projectionMatrix = ortho(-30000, 30000, -30000, 30000, -500000, 500000);
 projectionMatrix = mult(projectionMatrix, rotate(-75, vec3(1, 0, 0)));
 projectionMatrix = mult(projectionMatrix, rotate(30, vec3(0, 0, 1)));
 
@@ -42,6 +42,9 @@ function loadShaderProgram(gl) {
     program.projLoc = gl.getUniformLocation(program, "projectionMatrix");
     program.modVLoc = gl.getUniformLocation(program, "modelViewMatrix");
 
+    program.hminLoc = gl.getUniformLocation(program, "hmin");
+    program.hmaxLoc = gl.getUniformLocation(program, "hmax");
+
     return program; // send this back so that other parts of the program can use it
 }
 
@@ -62,7 +65,10 @@ function renderToContext(drawables, gl) {
     modelViewMatrix = rotate(theta[1], [0, 0, 1] );//rotates the model around the z axis
     
     gl.uniformMatrix4fv( gl.getUniformLocation(program, "modelViewMatrix"), false, flatten(modelViewMatrix) );       
-    gl.uniformMatrix4fv( program.projLoc, false, flatten(projectionMatrix) );
+    gl.uniformMatrix4fv(program.projLoc, false, flatten(projectionMatrix));
+
+    gl.uniform1f(program.hminLoc, hmin);
+    gl.uniform1f(program.hmaxLoc, hmax);
     
     // queue up this same callback for the next frame
     requestAnimFrame(renderScene);
@@ -100,20 +106,18 @@ TriStrip.prototype.draw = function (gl) {
 
 /* Build a triangle strip with random heights. */
 function mkStrip() {
+    var i, j;
     var vertices = []; // to hold the vertices to be drawn as tri-strips
     
     // generate a thin grid using the number of rows and columns from dat file with random heights
-    for (var i = 0; i < nrows; i++) {
-        for (var j = 0; j < ncols; j++) {
+    for (i = 0; i < nrows; i++) {
+        for (j = 0; j < ncols; j++) {
             var zHeight = heights[j][i];
             vertices.push(vec3(xmin + j * xres, ymin + i * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
             vertices.push(vec3(xmin + (j + 1) * xres, ymin + i * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-        }
+        }            
         // need to repeat the ending points to make degenerate triangle ("stutter"), this will be two extra vertices
     }
-    console.log("heights length: " + heights[0].length + heights.length); //heights is a 2d array
-    console.log("Vertices length: " + vertices.length);
-
     return vertices;
 }
 
