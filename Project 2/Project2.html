@@ -15,14 +15,34 @@
         varying vec4 vColor; // sent down to later stages of the pipeline
         uniform mat4 projectionMatrix; // uniform matrix for viewing projection
         uniform mat4 modelViewMatrix;
-        uniform float nHeights;
+        uniform float hmax;
+        uniform float hmin;
+        varying float normZ;
+        
+        vec4 colors(const float nHeights)
+        {
+            if (nHeights ==  0.0)
+            {
+                return vec4(1.0,1.0,1.0,1.0);
+            }else if (nHeights < 0.2)
+            {
+                return vec4(0.0,1.0,0.0,1.0);
+            }else{
+                return vec4(1.0,0.0,0.0,1.0);
+            }
+        }
 
         void main()
         {
+
+
+
+
+        normZ = (vPosition.z - hmin) / (hmax - hmin);
+
+        vColor = colors( (vPosition.z - hmin) / (hmax - hmin) );
         // blend the app-defined color with the "height" coordinate
-
-        vColor = mix(color, color2, nHeights);
-
+        //vColor = vec4( color.r * vPosition.z, color.g * vPosition.z,  color.b * vPosition.z, color.a );
         // some per-object matrix ops now done at app level
         // but final matrix chain is processed here
         gl_Position = projectionMatrix * modelViewMatrix * vPosition;
