@@ -1,7 +1,6 @@
 var projectionMatrix; // global variable to hold the projection matrix
 var modelViewMatrix;
 var program;
-var nHeights = [];
 // Set up a simple oblique, orthographic projection matrix
                      //left,right,bottom,top,near,far
 projectionMatrix = ortho(-30000, 30000, -30000, 30000, -500000, 500000);
@@ -38,13 +37,9 @@ function loadShaderProgram(gl) {
     program.colorLoc = gl.getUniformLocation(program, "color");
     program.color2Loc = gl.getUniformLocation(program, "color2");
 
-
     // get the address of the uniform variables and save it to our program object
     program.projLoc = gl.getUniformLocation(program, "projectionMatrix");
     program.modVLoc = gl.getUniformLocation(program, "modelViewMatrix");
-
-    program.nHeightsLoc = gl.getUniformLocation(program, "nHeights");
-
 
     return program; // send this back so that other parts of the program can use it
 }
@@ -92,13 +87,10 @@ TriStrip.prototype.draw = function (gl) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set pos buffer active
     // map position buffer data to the corresponding vertex shader attribute
     gl.vertexAttribPointer(this.program.vposLoc, 3, gl.FLOAT, false, 0, 0);
-    gl.vertexAttribPointer(this.program.vpos2Loc, 3, gl.FLOAT, false, 0, 0);
 
     // send this object's color down to the GPU as a uniform variable
     gl.uniform4fv(this.program.colorLoc, flatten(this.color));
     gl.uniform4fv(this.program.color2Loc, flatten(this.color2));
-
-    gl.uniform1f(this.program.nHeightsLoc, nHeights);
 
     // render the primitives!
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.vertices.length);
@@ -107,16 +99,16 @@ TriStrip.prototype.draw = function (gl) {
 /* Build a triangle strip with random heights. */
 function mkStrip() {
     var i, j;
+    var zHeight;
     var vertices = []; // to hold the vertices to be drawn as tri-strips
 
     
     // generate a thin grid using the number of rows and columns from dat file with random heights
     for (i = 0; i < nrows; i++) {
         for (j = 0; j < ncols; j++) {
-            var zHeight = heights[j][i];
+            zHeight = heights[j][i];
             vertices.push(vec3(xmin + j * xres, ymin + i * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
             vertices.push(vec3(xmin + (j + 1) * xres, ymin + i * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-            nHeights.push(zHeight / hmax);
         }            
         // need to repeat the ending points to make degenerate triangle ("stutter"), this will be two extra vertices
     }
@@ -124,7 +116,7 @@ function mkStrip() {
 }
 
 /* Set up event callback to start the application */
-window.onload = function () {
+window.onload = function() {
 
     // local variable to hold reference to our WebGL context
     var gl = initGL(); // basic WebGL setup for the scene

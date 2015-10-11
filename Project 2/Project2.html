@@ -15,19 +15,12 @@
         varying vec4 vColor; // sent down to later stages of the pipeline
         uniform mat4 projectionMatrix; // uniform matrix for viewing projection
         uniform mat4 modelViewMatrix;
-        uniform float nHeights[1000];
-
-        vec4 colors(float height){
-            float heightNorm = height;
-            
-        
-            return vec4(0.0, 0.0, 0.0, 0.0);
-        }
 
         void main()
         {
         // blend the app-defined color with the "height" coordinate
-        vColor = vec4( color.r * vPosition.z, color.g * vPosition.z,  color.b * vPosition.z, color.a );
+
+        vColor = mix(color, color2, normalize(vPosition));
 
         // some per-object matrix ops now done at app level
         // but final matrix chain is processed here
