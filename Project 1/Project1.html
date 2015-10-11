@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html>
 <head>
     <title>WebGL Triangle Strip Grid</title>
@@ -10,17 +10,34 @@
     </style>
     <script id="vertex-shader" type="x-shader/x-vertex">
         attribute vec4 vPosition; // vert attribs bound to array buffer data
-        uniform vec4 color; // uniform value shared across all vertices
+        varying vec4 color; // uniform value shared across all vertices
+        varying vec4 color2;
         varying vec4 vColor; // sent down to later stages of the pipeline
+
+        vec4 colors(float nHeights){
+        vec4 terrain_colours[2];
+        terrain_colours[0] = color;
+        terrain_colours[1] = color2;
+         if (nHeights ==  0.0){
+                return terrain_colours[0];
+        }else if (nHeights < 0.2){
+                return mix(terrain_colours[1], terrain_colours[0], nHeights);
+        }else if (nHeights >= 0.2){
+                return mix(terrain_colours[0], terrain_colours[1], nHeights);
+        }
+        else if (nHeights >= 0.2){
+                return terrain_colours[1];
+        }
+        return vec4(0.0,0.0,0.0,0.0);
+        }
 
         void main()
         {
+        color = vec4(1.0,0.0,0.0,1.0);
+        color2 = vec4(0.0,1.0,0.0,1.0);
         // blend the app-defined color with the "height" coordinate
-        vColor = vec4( color.r * vPosition.z,
-        color.g * vPosition.z,
-        color.b * vPosition.z,
-        color.a );
 
+        vColor = colors(vPosition.z);
         // some per-object matrix ops now done at app level
         // but final matrix chain is processed here
         gl_Position = vPosition;
