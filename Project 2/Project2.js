@@ -1,6 +1,7 @@
 var projectionMatrix; // global variable to hold the projection matrix
 var modelViewMatrix;
 var program;
+var nHeights = [];
 // Set up a simple oblique, orthographic projection matrix
                      //left,right,bottom,top,near,far
 projectionMatrix = ortho(-30000, 30000, -30000, 30000, -500000, 500000);
@@ -40,6 +41,8 @@ function loadShaderProgram(gl) {
     // get the address of the uniform variables and save it to our program object
     program.projLoc = gl.getUniformLocation(program, "projectionMatrix");
     program.modVLoc = gl.getUniformLocation(program, "modelViewMatrix");
+
+    program.nHeightsLoc = gl.getUniformLocation(program, "nHeights");
 
     return program; // send this back so that other parts of the program can use it
 }
@@ -92,6 +95,8 @@ TriStrip.prototype.draw = function (gl) {
     gl.uniform4fv(this.program.colorLoc, flatten(this.color));
     gl.uniform4fv(this.program.color2Loc, flatten(this.color2));
 
+    gl.uniform1f(program.nHeightsLoc, false, flatten(nHeights));
+
     // render the primitives!
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.vertices.length);
 }
@@ -109,6 +114,7 @@ function mkStrip() {
             zHeight = heights[j][i];
             vertices.push(vec3(xmin + j * xres, ymin + i * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
             vertices.push(vec3(xmin + (j + 1) * xres, ymin + i * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+            nHeights.push(zHeight / hmax);
         }            
         // need to repeat the ending points to make degenerate triangle ("stutter"), this will be two extra vertices
     }
