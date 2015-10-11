@@ -15,7 +15,14 @@
         varying vec4 vColor; // sent down to later stages of the pipeline
         uniform mat4 projectionMatrix; // uniform matrix for viewing projection
         uniform mat4 modelViewMatrix;
-        uniform float nHeights[100][100];
+        uniform float nHeights[1000];
+
+        vec4 colors(float height){
+            float heightNorm = height;
+            
+        
+            return vec4(0.0, 0.0, 0.0, 0.0);
+        }
 
         void main()
         {
