@@ -95,8 +95,8 @@ TriStrip.prototype.draw = function (gl) {
     gl.uniform4fv(this.program.colorLoc, flatten(this.color));
     gl.uniform4fv(this.program.color2Loc, flatten(this.color2));
 
-    gl.uniform1f(program.hminLoc, false, hmin);
-    gl.uniform1f(program.hmaxLoc, false, hmin);
+    gl.uniform1f(program.hminLoc, hmin);
+    gl.uniform1f(program.hmaxLoc, hmax);
 
     // render the primitives!
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.vertices.length);
@@ -115,10 +115,11 @@ function mkStrip() {
              zHeight = heights[i][j];
              vertices.push(vec3(xmin + i * xres, ymin + j * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
              vertices.push(vec3(xmin + (i + 1) * xres, ymin + j * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+             //console.log((zHeight - hmin) / (hmax - hmin));
          }
          // need to repeat the ending points to make degenerate triangle ("stutter"), this will be two extra vertices
              vertices.push(vec3(xmin + i * xres, ymin + j * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-             vertices.push(vec3(xmin + i * xres, ymin + j * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+             vertices.push(vec3(xmin, ymin + j * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
 
      }
     return vertices;
