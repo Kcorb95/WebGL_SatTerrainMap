@@ -5,7 +5,7 @@ var program;
                      //left,right,bottom,top,near,far
 projectionMatrix = ortho(-55000, 55000, -55000, 55000, -500000, 500000);
 projectionMatrix = mult(projectionMatrix, rotate(-75, vec3(1, 0, 0)));
-projectionMatrix = mult(projectionMatrix, rotate(25, vec3(0, 0, 1)));
+projectionMatrix = mult(projectionMatrix, rotate(20, vec3(0, 0, 1)));
 
 var theta =[0, 0, 0];//Can be later changed if needed to rotate on multiple different axis
 
@@ -105,10 +105,7 @@ TriStrip.prototype.draw = function (gl) {
 /* Build a triangle strip with random heights. */
 function mkStrip() {
     var i, j;
-    var zHeight;
     var vertices = []; // to hold the vertices to be drawn as tri-strips
-
-    
     // generate a thin grid using the number of rows and columns from dat file with random heights
     for (i = 0; i < ncols; i++) {
          for (j = 0; j < nrows; j++) {
@@ -117,8 +114,7 @@ function mkStrip() {
          }
          // need to repeat the ending points to make degenerate triangle ("stutter"), this will be two extra vertices
          vertices.push(vec3(xmin + i * xres, ymin + j * yres, heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-         vertices.push(vec3(xmin, ymin + j * yres, heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-
+         vertices.push(vec3(xmin, ymin + j * yres, heights[i][j+1])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
      }
     return vertices;
 }
