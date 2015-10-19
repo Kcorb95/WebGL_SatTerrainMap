@@ -3,9 +3,9 @@ var modelViewMatrix;
 var program;
 // Set up a simple oblique, orthographic projection matrix
                      //left,right,bottom,top,near,far
-projectionMatrix = ortho(-30000, 30000, -30000, 30000, -500000, 500000);
+projectionMatrix = ortho(-55000, 55000, -55000, 55000, -500000, 500000);
 projectionMatrix = mult(projectionMatrix, rotate(-75, vec3(1, 0, 0)));
-projectionMatrix = mult(projectionMatrix, rotate(30, vec3(0, 0, 1)));
+projectionMatrix = mult(projectionMatrix, rotate(20, vec3(0, 0, 1)));
 
 var theta =[0, 0, 0];//Can be later changed if needed to rotate on multiple different axis
 
@@ -33,16 +33,16 @@ function loadShaderProgram(gl) {
     //   then enable the vertex attribute array
     program.vposLoc = gl.getAttribLocation(program, "vPosition");
     gl.enableVertexAttribArray(program.vposLoc);
-    program.vpos2Loc = gl.getAttribLocation(program, "vPosition2");
-    gl.enableVertexAttribArray(program.vpos2Loc);
-    // get the address of the uniform variable and save it to our program object
+     // get the address of the uniform variable and save it to our program object
     program.colorLoc = gl.getUniformLocation(program, "color");
     program.color2Loc = gl.getUniformLocation(program, "color2");
-
 
     // get the address of the uniform variables and save it to our program object
     program.projLoc = gl.getUniformLocation(program, "projectionMatrix");
     program.modVLoc = gl.getUniformLocation(program, "modelViewMatrix");
+
+    program.hminLoc = gl.getUniformLocation(program, "hmin");
+    program.hmaxLoc = gl.getUniformLocation(program, "hmax");
 
     return program; // send this back so that other parts of the program can use it
 }
@@ -64,7 +64,7 @@ function renderToContext(drawables, gl) {
     modelViewMatrix = rotate(theta[1], [0, 0, 1] );//rotates the model around the z axis
     
     gl.uniformMatrix4fv( gl.getUniformLocation(program, "modelViewMatrix"), false, flatten(modelViewMatrix) );       
-    gl.uniformMatrix4fv( program.projLoc, false, flatten(projectionMatrix) );
+    gl.uniformMatrix4fv(program.projLoc, false, flatten(projectionMatrix));
     
     // queue up this same callback for the next frame
     requestAnimFrame(renderScene);
@@ -90,11 +90,13 @@ TriStrip.prototype.draw = function (gl) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set pos buffer active
     // map position buffer data to the corresponding vertex shader attribute
     gl.vertexAttribPointer(this.program.vposLoc, 3, gl.FLOAT, false, 0, 0);
-    gl.vertexAttribPointer(this.program.vpos2Loc, 3, gl.FLOAT, false, 0, 0);
 
     // send this object's color down to the GPU as a uniform variable
     gl.uniform4fv(this.program.colorLoc, flatten(this.color));
     gl.uniform4fv(this.program.color2Loc, flatten(this.color2));
+
+    gl.uniform1f(program.hminLoc, hmin);
+    gl.uniform1f(program.hmaxLoc, hmax);
 
     // render the primitives!
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.vertices.length);
@@ -102,18 +104,18 @@ TriStrip.prototype.draw = function (gl) {
 
 /* Build a triangle strip with random heights. */
 function mkStrip() {
+    var i, j;
     var vertices = []; // to hold the vertices to be drawn as tri-strips
-    
     // generate a thin grid using the number of rows and columns from dat file with random heights
-    for (var i = 0; i < nrows; i++) {
-        for (var j = 0; j < ncols; j++) {
-            var zHeight = heights[j][i];
-            vertices.push(vec3(xmin + i * xres, ymin + j * yres, zHeight)); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-        }
-    }
-    console.log("heights length: " + heights[0].length + heights.length); //heights is a 2d array
-    console.log("Vertices length: " + vertices.length);
-
+    for (i = 0; i < ncols - 1; i++) {
+         for (j = 0; j < nrows; j++) {
+             vertices.push(vec3(xmin + i * xres, ymin + j * yres, heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+             vertices.push(vec3(xmin + (i + 1) * xres, ymin + j * yres, heights[i+1][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+         }
+         // need to repeat the ending points to make degenerate triangle ("stutter"), this will be two extra vertices
+         vertices.push(vec3(xmin + i * xres, ymin + j * yres, heights[i][j-1])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+         vertices.push(vec3(xmin, ymin + j * yres, heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+     }
     return vertices;
 }
 
@@ -145,14 +147,14 @@ window.onload = function () {
         });
     });
     
-    document.getElementById("rotateLeft").addEventListener("click", function () { theta[1] -= 2.0; });
+   document.getElementById("rotateLeft").addEventListener("click", function () { theta[1] -= 5.0; });
 
-    document.getElementById("rotateRight").addEventListener("click", function () { theta[1] += 2.0; });
+    document.getElementById("rotateRight").addEventListener("click", function () { theta[1] += 5.0; });
 
     var drawables = []; // used to store a list of objects that need to be drawn
 
     // create a triangle strip object and add it to the list of objects to draw
-    drawables.push(new TriStrip(gl, prog, vec4(1, 0, 0, 1), vec4(0, 1, 0, 1)));
+    drawables.push(new TriStrip(gl, prog, vec4(0, 0, 1, 1), vec4(1, 1, 0, 1)));
 
     renderToContext(drawables, gl); // start drawing the scene
 }
