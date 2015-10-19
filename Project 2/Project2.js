@@ -107,14 +107,14 @@ function mkStrip() {
     var i, j;
     var vertices = []; // to hold the vertices to be drawn as tri-strips
     // generate a thin grid using the number of rows and columns from dat file with random heights
-    for (i = 0; i < ncols; i++) {
+    for (i = 0; i < ncols - 1; i++) {
          for (j = 0; j < nrows; j++) {
              vertices.push(vec3(xmin + i * xres, ymin + j * yres, heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-             vertices.push(vec3(xmin + (i + 1) * xres, ymin + j * yres, heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+             vertices.push(vec3(xmin + (i + 1) * xres, ymin + j * yres, heights[i+1][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
          }
          // need to repeat the ending points to make degenerate triangle ("stutter"), this will be two extra vertices
-         vertices.push(vec3(xmin + i * xres, ymin + j * yres, heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-         vertices.push(vec3(xmin, ymin + j * yres, heights[i][j+1])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+         vertices.push(vec3(xmin + i * xres, ymin + j * yres, heights[i][j-1])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+         vertices.push(vec3(xmin, ymin + j * yres, heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
      }
     return vertices;
 }
