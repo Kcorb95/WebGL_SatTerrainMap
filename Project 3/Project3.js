@@ -1,9 +1,13 @@
 var projectionMatrix; // global variable to hold the projection matrix
 var modelViewMatrix;
 var program;
+var oleft = -55000;
+var oright = 55000;
+var otop = 55000;
+var obottom = -55000;
 // Set up a simple oblique, orthographic projection matrix
                      //left,right,bottom,top,near,far
-projectionMatrix = ortho(-55000, 55000, -55000, 55000, -500000, 500000);
+projectionMatrix = ortho(oleft, oright, obottom, otop, -500000, 500000);
 projectionMatrix = mult(projectionMatrix, rotate(-75, vec3(1, 0, 0)));
 projectionMatrix = mult(projectionMatrix, rotate(20, vec3(0, 0, 1)));
 
@@ -147,9 +151,10 @@ window.onload = function () {
         });
     });
     
-   document.getElementById("rotateLeft").addEventListener("click", function () { theta[1] -= 5.0; });
-
+    document.getElementById("rotateLeft").addEventListener("click", function () { theta[1] -= 5.0; });
     document.getElementById("rotateRight").addEventListener("click", function () { theta[1] += 5.0; });
+                                                                                //what is the callback?
+    //document.getElementById("files").addEventListener("change", readDemFile(files, 1), false);
 
     var drawables = []; // used to store a list of objects that need to be drawn
 
