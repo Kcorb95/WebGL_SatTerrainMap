@@ -2,6 +2,7 @@ var projectionMatrix; // global variable to hold the projection matrix
 var modelViewMatrix;
 var program;
 var zoom = 55000;
+var otop = 55000;
 
 
 var theta =[0, 0, 0];//Can be later changed if needed to rotate on multiple different axis
@@ -56,9 +57,10 @@ function renderToContext(drawables, gl) {
 
     // Set up a simple oblique, orthographic projection matrix
                      //left,right,bottom,top,near,far
-    projectionMatrix = ortho(-zoom, zoom, -zoom, zoom, -500000, 500000);
+    projectionMatrix = ortho(-zoom, zoom, -zoom, otop, -500000, 500000);
     projectionMatrix = mult(projectionMatrix, rotate(-75, vec3(1, 0, 0)));
     projectionMatrix = mult(projectionMatrix, rotate(20, vec3(0, 0, 1)));
+    
     
     drawables.forEach(function (obj) { // loop over all objects and draw each
         obj.draw(gl);
@@ -150,7 +152,9 @@ window.onload = function () {
         });
     });
     
-    document.getElementById("zoomSlider").onchange = function() { zoom += event.srcElement.value/1; };
+    document.getElementById("zoomSlider").onchange = function() { zoom = event.srcElement.value/1; };
+    document.getElementById("heightSlider").onchange = function() { otop = event.srcElement.value/1; };
+    
     
     document.getElementById("rotateLeft").addEventListener("click", function () { theta[1] -= 5.0; });
     document.getElementById("rotateRight").addEventListener("click", function () { theta[1] += 5.0; });

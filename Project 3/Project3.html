@@ -83,11 +83,14 @@
                 document.getElementById('files').addEventListener('change', handleFileSelect, false);
         
     </script> 
-       
+    <br />
+           <!-- This needs to be changed later when I figure out how to deal with the zooming-->
+    <input id="zoomSlider" type="range" min="25000" max="70000" step="5000" value="55000">
+    <br />
+    <input id="heightSlider" type="range" min="10000" max="150000" step="5000" value="55000">
+    <br />
     <button id="rotateLeft">Rotate Left</button> 
     <button id="rotateRight">Rotate Right</button>
-    <!-- This needs to be changed later when I figure out how to deal with the zooming-->
-    <input id="zoomSlider" type="range" min="-20000" max="20000" step="5000" value="0">
     <br />
     <br />
     <button id="perspectiveView">Switch to perspective view</button>
