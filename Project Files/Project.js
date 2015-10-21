@@ -1,11 +1,8 @@
-var gl;
-var prog;
-
 var projectionMatrix; // global variable to hold the projection matrix
 var modelViewMatrix;
 var program;
 var zoom = 55000;
-var cHeight = 55000;
+var cHeight = 55000;//neds to be removed and setup to use a lookatfunction
 
 
 var theta =[0, 0, 0];//Can be later changed if needed to rotate on multiple different axis
@@ -17,7 +14,8 @@ function initGL() {
 
     // obtain a WebGL context bound to our canvas
     var gl = WebGLUtils.setupWebGL(canvas);
-    if (!gl) { alert("WebGL isn't available"); }
+    if (!gl) 
+        alert("WebGL isn't available");
 
     gl.viewport(0, 0, canvas.width, canvas.height); // use the whole canvas
     gl.clearColor(0.0, 0.0, 0.0, 1.0); // background color
@@ -82,7 +80,7 @@ function TriStrip(gl, program, color, color2) {
     this.program = program; // save my shader program
     this.color = color; // the color of this triangle strip surface
     this.color2 = color2;
-    this.vertices = mkStrip(); // this array will hold raw vertex positions
+    this.vertices = makeStrip(); // this array will hold raw vertex positions
     this.vBufferId = gl.createBuffer(); // reserve a buffer object and store a reference to it
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set active array buffer
@@ -110,29 +108,28 @@ TriStrip.prototype.draw = function (gl) {
 }
 
 /* Build a triangle strip with random heights. */
-function mkStrip() {
+function makeStrip() {
     var i, j;
+    var xmin = DEMObj.xmin;
+    var ymin = DEMObj.ymin;
+    var xres = DEMObj.xres;
+    var yres = DEMObj.yres;
     var vertices = []; // to hold the vertices to be drawn as tri-strips
     // generate a thin grid using the number of rows and columns from dat file with random heights
     for (i = 0; i < DEMObj.ncols - 1; i++) {
          for (j = 0; j < DEMObj.nrows; j++) {
-             vertices.push(vec3(DEMObj.xmin + i * DEMObj.xres, DEMObj.ymin + j * DEMObj.yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-             vertices.push(vec3(DEMObj.xmin + (i + 1) * DEMObj.xres, DEMObj.ymin + j * DEMObj.yres, DEMObj.heights[i+1][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+             vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+             vertices.push(vec3(xmin + (i + 1) * xres, ymin + j * yres, DEMObj.heights[i+1][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
          }
          // need to repeat the ending points to make degenerate triangle ("stutter"), this will be two extra vertices
-         vertices.push(vec3(DEMObj.xmin + i * DEMObj.xres, DEMObj.ymin + j * DEMObj.yres, DEMObj.heights[i][j-1])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-         vertices.push(vec3(DEMObj.xmin, DEMObj.ymin + j * DEMObj.yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+         vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j-1])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+         vertices.push(vec3(xmin, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
      }
     return vertices;
 }
 
 /* Set up event callback to start the application */
 window.onload = function () {
-
-    // local variable to hold reference to our WebGL context
-    gl = initGL(); // basic WebGL setup for the scene
-    prog = loadShaderProgram(gl);
-
     // event listener on the button will set the color of each drawable object
     document.getElementById("colorBtn").addEventListener("click", function () {
         var color = vec4(document.getElementById("redIn").value,
@@ -162,8 +159,11 @@ window.onload = function () {
     document.getElementById("rotateRight").addEventListener("click", function () { theta[1] += 5.0; });
 }
 
-/* This name stinks, need to change it later */
-function prepRender() {
+function buildTerrain() {
+    // local variable to hold reference to our WebGL context
+    var gl = initGL(); // basic WebGL setup for the scene
+    var prog = loadShaderProgram(gl);
+    
     var drawables = []; // used to store a list of objects that need to be drawn
 
     // create a triangle strip object and add it to the list of objects to draw
