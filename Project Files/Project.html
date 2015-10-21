@@ -66,7 +66,7 @@
                     alert('Please select a file!');
                     return;
                 }
-                readDemFile(files, prepRender);
+                readDemFile(files, prepRender());
             }
                 document.getElementById('files').addEventListener('change', handleFileSelect);
     </script> 

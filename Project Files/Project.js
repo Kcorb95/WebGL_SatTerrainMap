@@ -102,8 +102,8 @@ TriStrip.prototype.draw = function (gl) {
     gl.uniform4fv(this.program.colorLoc, flatten(this.color));
     gl.uniform4fv(this.program.color2Loc, flatten(this.color2));
 
-    gl.uniform1f(program.hminLoc, hmin);
-    gl.uniform1f(program.hmaxLoc, hmax);
+    gl.uniform1f(program.hminLoc, DEMObj.hmin);
+    gl.uniform1f(program.hmaxLoc, DEMObj.hmax);
 
     // render the primitives!
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.vertices.length);
