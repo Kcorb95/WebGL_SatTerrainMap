@@ -61,27 +61,17 @@
     <br />
     <br />
     
-    <input type="file" accept=".dem" id="files" name="files[]"/>
-    <output id="list"></output>
-
+    <input type="file" accept=".dem" id="files" name="file"/>
     <script>
-            function handleFileSelect(evt) {
-                var files = evt.target.files; // FileList object
-
-                // files is a FileList of File objects. List some properties.
-                var output = [];
-                for (var i = 0, f; f = files[i]; i++) {
-                output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
-                            f.size, ' bytes, last modified: ',
-                            f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a', '</li>');
+            function handleFileSelect() {
+                var files = document.getElementById('files').files;
+                if (!files.length) {
+                    alert('Please select a file!');
+                    return;
                 }
-                document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
-                            //what is callback?
-                readDemFile(files, callback);
+                readDemFile(files, prepRender());
             }
-
-                document.getElementById('files').addEventListener('change', handleFileSelect, false);
-        
+                document.getElementById('files').addEventListener('change', handleFileSelect);
     </script> 
     <br />
            <!-- This needs to be changed later when I figure out how to deal with the zooming-->

@@ -1,3 +1,6 @@
+var gl;
+var prog;
+
 var projectionMatrix; // global variable to hold the projection matrix
 var modelViewMatrix;
 var program;
@@ -111,14 +114,14 @@ function mkStrip() {
     var i, j;
     var vertices = []; // to hold the vertices to be drawn as tri-strips
     // generate a thin grid using the number of rows and columns from dat file with random heights
-    for (i = 0; i < ncols - 1; i++) {
-         for (j = 0; j < nrows; j++) {
-             vertices.push(vec3(xmin + i * xres, ymin + j * yres, heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-             vertices.push(vec3(xmin + (i + 1) * xres, ymin + j * yres, heights[i+1][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+    for (i = 0; i < DEMObj.ncols - 1; i++) {
+         for (j = 0; j < DEMObj.nrows; j++) {
+             vertices.push(vec3(DEMObj.xmin + i * DEMObj.xres, DEMObj.ymin + j * DEMObj.yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+             vertices.push(vec3(DEMObj.xmin + (i + 1) * DEMObj.xres, DEMObj.ymin + j * DEMObj.yres, DEMObj.heights[i+1][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
          }
          // need to repeat the ending points to make degenerate triangle ("stutter"), this will be two extra vertices
-         vertices.push(vec3(xmin + i * xres, ymin + j * yres, heights[i][j-1])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-         vertices.push(vec3(xmin, ymin + j * yres, heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+         vertices.push(vec3(DEMObj.xmin + i * DEMObj.xres, DEMObj.ymin + j * DEMObj.yres, DEMObj.heights[i][j-1])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+         vertices.push(vec3(DEMObj.xmin, DEMObj.ymin + j * DEMObj.yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
      }
     return vertices;
 }
@@ -127,8 +130,8 @@ function mkStrip() {
 window.onload = function () {
 
     // local variable to hold reference to our WebGL context
-    var gl = initGL(); // basic WebGL setup for the scene
-    var prog = loadShaderProgram(gl);
+    gl = initGL(); // basic WebGL setup for the scene
+    prog = loadShaderProgram(gl);
 
     // event listener on the button will set the color of each drawable object
     document.getElementById("colorBtn").addEventListener("click", function () {
@@ -157,11 +160,14 @@ window.onload = function () {
     
     document.getElementById("rotateLeft").addEventListener("click", function () { theta[1] -= 5.0; });
     document.getElementById("rotateRight").addEventListener("click", function () { theta[1] += 5.0; });
+}
 
+/* This name stinks, need to change it later */
+function prepRender() {
     var drawables = []; // used to store a list of objects that need to be drawn
 
     // create a triangle strip object and add it to the list of objects to draw
-    drawables.push(new TriStrip(gl, prog, vec4(0, 0, 1, 1), vec4(1, 1, 0, 1)));
+    drawables.push(new TriStrip(gl, prog, vec4(0, 0, 0, 1), vec4(1, 1, 0, 1)));
 
     renderToContext(drawables, gl); // start drawing the scene
 }
