@@ -48,9 +48,6 @@
     <script type="text/javascript" src="../Common/MV.js"></script>
     <script type="text/javascript" src="Project3.js"></script>
     <script type="text/javascript" src="../lib/ReadDEM.js"></script>
-    <script type="text/javascript" src="../Data/JS/Poughkeepsie.js"></script>
-    <!-- <script type="text/javascript" src="../Data/JS/MohonkLake.js"></script> -->
-    <!-- <script type="text/javascript" src="../Data/JS/Gardiner.js"></script> -->
 
 </head>
 <body style="background-color:black;text-align:center;">
@@ -69,7 +66,7 @@
                     alert('Please select a file!');
                     return;
                 }
-                readDemFile(files, prepRender());
+                readDemFile(files, prepRender);
             }
                 document.getElementById('files').addEventListener('change', handleFileSelect);
     </script> 
