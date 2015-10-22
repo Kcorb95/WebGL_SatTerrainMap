@@ -57,7 +57,6 @@
     </canvas>
     <br />
     <br />
-    
     <input type="file" id="files" name="file" accept=".dem" />
     <script>
             function handleFileSelect() {
@@ -66,12 +65,11 @@
                     alert('Please select a file!');
                     return;
                 }
-                readDemFile(document.getElementById('files').files, buildTerrain());
+                readDemFile(files[0], buildTerrain());
             }
                 document.getElementById('files').addEventListener('change', handleFileSelect);
     </script> 
     <br />
-           <!-- This needs to be changed later when I figure out how to deal with the zooming-->
     <input id="zoomSlider" type="range" min="25000" max="70000" step="5000" value="55000">
     <br />
     <input id="heightSlider" type="range" min="-90" max="0" step="5" value="-75">
