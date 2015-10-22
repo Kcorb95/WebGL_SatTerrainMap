@@ -4,8 +4,11 @@ var program;
 var zoom = 55000;
 var cHeight = 55000;//neds to be removed and setup to use a lookatfunction
 
+var eye = vec3(0.0, 0.0, 0.0);
+var at = vec3(0.0, 0.0, 0.0);
+var up = vec3(0.0, 1.0, 0.0);
 
-var theta =[0, 0, 0];//Can be later changed if needed to rotate on multiple different axis
+var theta = [0, 0, 0];//Can be later changed if needed to rotate on multiple different axis
 
 /* Initialize global WebGL stuff - not object specific */
 function initGL() {
@@ -14,7 +17,7 @@ function initGL() {
 
     // obtain a WebGL context bound to our canvas
     var gl = WebGLUtils.setupWebGL(canvas);
-    if (!gl) 
+    if (!gl)
         alert("WebGL isn't available");
 
     gl.viewport(0, 0, canvas.width, canvas.height); // use the whole canvas
@@ -32,7 +35,7 @@ function loadShaderProgram(gl) {
     //   then enable the vertex attribute array
     program.vposLoc = gl.getAttribLocation(program, "vPosition");
     gl.enableVertexAttribArray(program.vposLoc);
-     // get the address of the uniform variable and save it to our program object
+    // get the address of the uniform variable and save it to our program object
     program.colorLoc = gl.getUniformLocation(program, "color");
     program.color2Loc = gl.getUniformLocation(program, "color2");
 
@@ -54,29 +57,30 @@ function renderToContext(drawables, gl) {
     }
 
     // start from a clean frame buffer for this frame
-    gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // Set up a simple oblique, orthographic projection matrix
-                     //left,right,bottom,top,near,far
-    projectionMatrix = ortho(-zoom, zoom, -zoom, zoom, -500000, 500000);
+    //left,right,bottom,top,near,far
+    //projectionMatrix = ortho(-zoom, zoom, -zoom, zoom, -500000, 500000);
+    projectionMatrix = perspective(45.0, 1.0, -500000, 500000);
     projectionMatrix = mult(projectionMatrix, rotate(cHeight, vec3(1, 0, 0)));
     projectionMatrix = mult(projectionMatrix, rotate(20, vec3(0, 0, 1)));
-    
+
     drawables.forEach(function (obj) { // loop over all objects and draw each
         obj.draw(gl);
     });
 
-    modelViewMatrix = rotate(theta[1], [0, 0, 1] );//rotates the model around the z axis
-    
-    gl.uniformMatrix4fv( gl.getUniformLocation(program, "modelViewMatrix"), false, flatten(modelViewMatrix) );       
+    modelViewMatrix = mult(lookAt(eye, at, up), rotate(theta[1], [0, 0, 1]));//rotates the model around the z axis
+
+    gl.uniformMatrix4fv(gl.getUniformLocation(program, "modelViewMatrix"), false, flatten(modelViewMatrix));
     gl.uniformMatrix4fv(program.projLoc, false, flatten(projectionMatrix));
-    
+
     // queue up this same callback for the next frame
     requestAnimFrame(renderScene);
 }
 
 /* Constructor for a triangle strip object (initializes the data). */
-function TriStrip(gl, program, color, color2) {
+function Grid(gl, program, color, color2) {
     this.program = program; // save my shader program
     this.color = color; // the color of this triangle strip surface
     this.color2 = color2;
@@ -89,7 +93,7 @@ function TriStrip(gl, program, color, color2) {
 }
 
 /* Method allows an object to render itself */
-TriStrip.prototype.draw = function (gl) {
+Grid.prototype.draw = function (gl) {
     gl.useProgram(this.program); // set the current shader programs
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set pos buffer active
@@ -117,24 +121,24 @@ function makeStrip() {
     var vertices = []; // to hold the vertices to be drawn as tri-strips
     // generate a thin grid using the number of rows and columns from dat file with random heights
     for (i = 0; i < DEMObj.ncols - 1; i++) {
-         for (j = 0; j < DEMObj.nrows; j++) {
-             vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-             vertices.push(vec3(xmin + (i + 1) * xres, ymin + j * yres, DEMObj.heights[i+1][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-         }
-         // need to repeat the ending points to make degenerate triangle ("stutter"), this will be two extra vertices
-         vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j-1])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-         vertices.push(vec3(xmin, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-     }
+        for (j = 0; j < DEMObj.nrows; j++) {
+            vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+            vertices.push(vec3(xmin + (i + 1) * xres, ymin + j * yres, DEMObj.heights[i + 1][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+        }
+        // need to repeat the ending points to make degenerate triangle ("stutter"), this will be two extra vertices
+        vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j - 1])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+        vertices.push(vec3(xmin, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+    }
     return vertices;
 }
 
 /* Set up event callback to start the application */
 window.onload = function () {
 
-    document.getElementById("zoomSlider").onchange = function() { zoom = event.srcElement.value/1; };
-    document.getElementById("heightSlider").onchange = function() { cHeight = event.srcElement.value/1; };
-    
-    
+    document.getElementById("zoomSlider").onchange = function () { zoom = event.srcElement.value / 1; };
+    document.getElementById("heightSlider").onchange = function () { cHeight = event.srcElement.value / 1; };
+
+
     document.getElementById("rotateLeft").addEventListener("click", function () { theta[1] -= 5.0; });
     document.getElementById("rotateRight").addEventListener("click", function () { theta[1] += 5.0; });
 }
@@ -143,7 +147,7 @@ function buildTerrain() {
     // local variable to hold reference to our WebGL context
     var gl = initGL(); // basic WebGL setup for the scene
     var prog = loadShaderProgram(gl);
-    
+
     var drawables = []; // used to store a list of objects that need to be drawn
 
     // event listener on the button will set the color of each drawable object
@@ -168,7 +172,7 @@ function buildTerrain() {
     });
 
     // create a triangle strip object and add it to the list of objects to draw
-    drawables.push(new TriStrip(gl, prog, vec4(0, 0, 0, 1), vec4(1, 1, 0, 1)));
+    drawables.push(new Grid(gl, prog, vec4(0, 0, 0, 1), vec4(1, 1, 0, 1)));
 
     renderToContext(drawables, gl); // start drawing the scene
 }
