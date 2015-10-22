@@ -130,6 +130,22 @@ function makeStrip() {
 
 /* Set up event callback to start the application */
 window.onload = function () {
+
+    document.getElementById("zoomSlider").onchange = function() { zoom = event.srcElement.value/1; };
+    document.getElementById("heightSlider").onchange = function() { cHeight = event.srcElement.value/1; };
+    
+    
+    document.getElementById("rotateLeft").addEventListener("click", function () { theta[1] -= 5.0; });
+    document.getElementById("rotateRight").addEventListener("click", function () { theta[1] += 5.0; });
+}
+
+function buildTerrain() {
+    // local variable to hold reference to our WebGL context
+    var gl = initGL(); // basic WebGL setup for the scene
+    var prog = loadShaderProgram(gl);
+    
+    var drawables = []; // used to store a list of objects that need to be drawn
+
     // event listener on the button will set the color of each drawable object
     document.getElementById("colorBtn").addEventListener("click", function () {
         var color = vec4(document.getElementById("redIn").value,
@@ -150,21 +166,6 @@ window.onload = function () {
             obj.color2 = color2;
         });
     });
-    
-    document.getElementById("zoomSlider").onchange = function() { zoom = event.srcElement.value/1; };
-    document.getElementById("heightSlider").onchange = function() { cHeight = event.srcElement.value/1; };
-    
-    
-    document.getElementById("rotateLeft").addEventListener("click", function () { theta[1] -= 5.0; });
-    document.getElementById("rotateRight").addEventListener("click", function () { theta[1] += 5.0; });
-}
-
-function buildTerrain() {
-    // local variable to hold reference to our WebGL context
-    var gl = initGL(); // basic WebGL setup for the scene
-    var prog = loadShaderProgram(gl);
-    
-    var drawables = []; // used to store a list of objects that need to be drawn
 
     // create a triangle strip object and add it to the list of objects to draw
     drawables.push(new TriStrip(gl, prog, vec4(0, 0, 0, 1), vec4(1, 1, 0, 1)));
