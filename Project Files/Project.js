@@ -4,7 +4,7 @@ var program;
 var zoom = 55000;
 var cHeight = 55000;//neds to be removed and setup to use a lookatfunction
 
-var eye = vec3(0.0, 0.0, 0.0);
+var eye = vec3(1000.0, 1000.0, 1000.0);
 var at = vec3(0.0, 0.0, 0.0);
 var up = vec3(0.0, 1.0, 0.0);
 
@@ -50,10 +50,10 @@ function loadShaderProgram(gl) {
 }
 
 /* Global render callback to draw all objects */
-function renderToContext(drawables, gl) {
+function render(drawables, gl) {
     // inner-scoped function for closure trickery
     function renderScene() {
-        renderToContext(drawables, gl);
+        render(drawables, gl);
     }
 
     // start from a clean frame buffer for this frame
@@ -62,15 +62,16 @@ function renderToContext(drawables, gl) {
     // Set up a simple oblique, orthographic projection matrix
     //left,right,bottom,top,near,far
     //projectionMatrix = ortho(-zoom, zoom, -zoom, zoom, -500000, 500000);
-    projectionMatrix = perspective(45.0, 1.0, -500000, 500000);
-    projectionMatrix = mult(projectionMatrix, rotate(cHeight, vec3(1, 0, 0)));
-    projectionMatrix = mult(projectionMatrix, rotate(20, vec3(0, 0, 1)));
+    projectionMatrix = perspective(45.0, (gl.canvas.width/gl.canvas.height), 0.01, 500000);
+    //projectionMatrix = mult(projectionMatrix, rotate(cHeight, vec3(1, 0, 0)));
+    //projectionMatrix = mult(projectionMatrix, rotate(20, vec3(0, 0, 1)));
 
+    modelViewMatrix = mult(lookAt(eye, at, up), rotate(theta[1], [0, 0, 1]));//rotates the model around the z axis
+
+    
     drawables.forEach(function (obj) { // loop over all objects and draw each
         obj.draw(gl);
     });
-
-    modelViewMatrix = mult(lookAt(eye, at, up), rotate(theta[1], [0, 0, 1]));//rotates the model around the z axis
 
     gl.uniformMatrix4fv(gl.getUniformLocation(program, "modelViewMatrix"), false, flatten(modelViewMatrix));
     gl.uniformMatrix4fv(program.projLoc, false, flatten(projectionMatrix));
@@ -173,6 +174,6 @@ function buildTerrain() {
 
     // create a triangle strip object and add it to the list of objects to draw
     drawables.push(new Grid(gl, prog, vec4(0, 0, 0, 1), vec4(1, 1, 0, 1)));
-
-    renderToContext(drawables, gl); // start drawing the scene
+    console.log("Done building");
+    render(drawables, gl); // start drawing the scene
 }
