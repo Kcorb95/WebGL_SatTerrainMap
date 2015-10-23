@@ -141,8 +141,8 @@ function makeStrip() {
 /* Set up event callback to start the application */
 window.onload = function () {
 
-    document.getElementById("zoomSlider").onchange = function () { zoom = event.srcElement.value / 1; };//listens for the modifier to change the zoom
-    document.getElementById("heightSlider").onchange = function () { cHeight = (DEMObj.hmax * event.srcElement.value) / 1; };//Listens for the value we will multiply maximum height by. 
+    document.getElementById("zoomSlider").oninput = function () { zoom = event.srcElement.value / 1; };//listens for the modifier to change the zoom
+    document.getElementById("heightSlider").oninput = function () { cHeight = (DEMObj.hmax * event.srcElement.value) / 1; };//Listens for the value we will multiply maximum height by. 
 
     //make this a radio button?
     document.getElementById("perspectiveView").onclick = function () { cMode = 0; };//Listens for the value we will multiply maximum height by. 
@@ -183,6 +183,9 @@ function buildTerrain() {
 
     //sets the current camera height based off of the maximum height value for the current DEM file.
     cHeight = DEMObj.hmax * 2;//this makes it proportional to the grid
+
+    document.getElementById("cellName").innerHTML = "<b><font color="+"white"+">"+DEMObj.cellname+"</font></b>";//updates the cellname after dem file is read
+
 
     // create a triangle strip object and add it to the list of objects to draw
     drawables.push(new Grid(gl, prog, vec4(0, 0, 0, 1), vec4(1, 1, 0, 1)));
