@@ -4,9 +4,7 @@ var program;
 var zoom = 55000;
 var cHeight = 55000;//neds to be removed and setup to use a lookatfunction
 
-var eye = vec3(1000.0, 1000.0, 1000.0);
-var at = vec3(0.0, 0.0, 0.0);
-var up = vec3(0.0, 1.0, 0.0);
+var eye, at, up;
 
 var theta = [0, 0, 0];//Can be later changed if needed to rotate on multiple different axis
 
@@ -62,10 +60,9 @@ function render(drawables, gl) {
     // Set up a simple oblique, orthographic projection matrix
     //left,right,bottom,top,near,far
     //projectionMatrix = ortho(-zoom, zoom, -zoom, zoom, -500000, 500000);
-    projectionMatrix = perspective(45.0, (gl.canvas.width/gl.canvas.height), 0.01, 500000);
-    //projectionMatrix = mult(projectionMatrix, rotate(cHeight, vec3(1, 0, 0)));
+    projectionMatrix = perspective(30.0, (gl.canvas.width / gl.canvas.height), 0.1, 500000);
+    projectionMatrix = mult(projectionMatrix, rotate(-20, vec3(1, 0, 0)));
     //projectionMatrix = mult(projectionMatrix, rotate(20, vec3(0, 0, 1)));
-
     modelViewMatrix = mult(lookAt(eye, at, up), rotate(theta[1], [0, 0, 1]));//rotates the model around the z axis
 
     
@@ -172,8 +169,13 @@ function buildTerrain() {
         });
     });
 
+    /*Set up the lookat parameters */
+    eye = vec3(-100.0, 100.0, DEMObj.hmax * 15);//camera's location
+    at = vec3(0.0, 0.0, 0.0);//where camera focuses
+    up = vec3(0.0, 0.0, 1.0);//which direction is up (in this case Z)
+
     // create a triangle strip object and add it to the list of objects to draw
     drawables.push(new Grid(gl, prog, vec4(0, 0, 0, 1), vec4(1, 1, 0, 1)));
-    console.log("Done building");
+    console.log("Done building");//debug for when grid is finished building
     render(drawables, gl); // start drawing the scene
 }
