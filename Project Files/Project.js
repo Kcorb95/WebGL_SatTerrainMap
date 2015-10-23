@@ -1,7 +1,9 @@
 var projectionMatrix; // global variable to hold the projection matrix
 var modelViewMatrix;
 var program;
+
 var zoom = 45;
+var cHeight;
 
 var eye, at, up;
 
@@ -55,6 +57,10 @@ function render(drawables, gl) {
 
     // start from a clean frame buffer for this frame
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    eye = vec3(60000, 90000, cHeight);//camera's location
+    at = vec3(0.0, 0.0, 0.0);//where camera focuses
+    up = vec3(0.0, 0.0, 1.0);//which direction is up (in this case Z)
 
     // Set up a simple oblique, orthographic projection matrix
     //left,right,bottom,top,near,far
@@ -133,7 +139,7 @@ function makeStrip() {
 window.onload = function () {
 
     document.getElementById("zoomSlider").onchange = function () { zoom = event.srcElement.value / 1; };
-    document.getElementById("heightSlider").onchange = function () { cHeight = event.srcElement.value / 1; };
+    document.getElementById("heightSlider").onchange = function () { cHeight = (DEMObj.hmax * event.srcElement.value) / 1; };
 
 
     document.getElementById("rotateLeft").addEventListener("click", function () { theta[2] -= 5.0; });
@@ -168,11 +174,7 @@ function buildTerrain() {
         });
     });
 
-    var cHeight = DEMObj.hmax * 2;//neds to be removed and setup to use a lookatfunction
-    /*Set up the lookat parameters */
-    eye = vec3(60000, 90000, cHeight);//camera's location
-    at = vec3(0.0, 0.0, 0.0);//where camera focuses
-    up = vec3(0.0, 0.0, 1.0);//which direction is up (in this case Z)
+    cHeight = DEMObj.hmax * 2;
 
     // create a triangle strip object and add it to the list of objects to draw
     drawables.push(new Grid(gl, prog, vec4(0, 0, 0, 1), vec4(1, 1, 0, 1)));
