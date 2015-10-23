@@ -60,7 +60,7 @@ function render(drawables, gl) {
     // Set up a simple oblique, orthographic projection matrix
     //left,right,bottom,top,near,far
     //projectionMatrix = ortho(-zoom, zoom, -zoom, zoom, -500000, 500000);
-    projectionMatrix = perspective(45.0, (gl.canvas.width / gl.canvas.height), 0.1, 500000);
+    projectionMatrix = perspective(45.0, (gl.canvas.width / gl.canvas.height), 1, 500000);
     //projectionMatrix = mult(projectionMatrix, rotate(0, vec3(1, 0, 0)));
     //projectionMatrix = mult(projectionMatrix, rotate(20, vec3(0, 0, 1)));
     //modelViewMatrix = mult(lookAt(eye, at, up), rotate(theta[2], [0, 0, 1]));//rotates the model around the z axis
@@ -171,7 +171,7 @@ function buildTerrain() {
     });
 
     /*Set up the lookat parameters */
-    eye = vec3(20000, 50000, DEMObj.hmax * 15);//camera's location
+    eye = vec3(60000, 90000, DEMObj.hmax * 2);//camera's location
     at = vec3(0.0, 0.0, 0.0);//where camera focuses
     up = vec3(0.0, 0.0, 1.0);//which direction is up (in this case Z)
 
