@@ -1,8 +1,7 @@
 var projectionMatrix; // global variable to hold the projection matrix
 var modelViewMatrix;
 var program;
-var zoom = 55000;
-var cHeight = 55000;//neds to be removed and setup to use a lookatfunction
+var zoom = 45;
 
 var eye, at, up;
 
@@ -60,11 +59,10 @@ function render(drawables, gl) {
     // Set up a simple oblique, orthographic projection matrix
     //left,right,bottom,top,near,far
     //projectionMatrix = ortho(-zoom, zoom, -zoom, zoom, -500000, 500000);
-    projectionMatrix = perspective(45.0, (gl.canvas.width / gl.canvas.height), 1, 500000);
+    projectionMatrix = perspective(zoom, (gl.canvas.width / gl.canvas.height), 1, 500000);
     //projectionMatrix = mult(projectionMatrix, rotate(0, vec3(1, 0, 0)));
     //projectionMatrix = mult(projectionMatrix, rotate(20, vec3(0, 0, 1)));
-    //modelViewMatrix = mult(lookAt(eye, at, up), rotate(theta[2], [0, 0, 1]));//rotates the model around the z axis
-    modelViewMatrix = lookAt(eye, at, up);//rotates the model around the z axis
+    modelViewMatrix = mult(lookAt(eye, at, up), rotate(theta[2], [0, 0, 1]));//rotates the model around the z axis
 
     
     drawables.forEach(function (obj) { // loop over all objects and draw each
@@ -170,8 +168,9 @@ function buildTerrain() {
         });
     });
 
+    var cHeight = DEMObj.hmax * 2;//neds to be removed and setup to use a lookatfunction
     /*Set up the lookat parameters */
-    eye = vec3(60000, 90000, DEMObj.hmax * 2);//camera's location
+    eye = vec3(60000, 90000, cHeight);//camera's location
     at = vec3(0.0, 0.0, 0.0);//where camera focuses
     up = vec3(0.0, 0.0, 1.0);//which direction is up (in this case Z)
 
