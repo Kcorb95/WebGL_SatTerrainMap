@@ -61,9 +61,9 @@ function render(drawables, gl) {
     //left,right,bottom,top,near,far
     //projectionMatrix = ortho(-zoom, zoom, -zoom, zoom, -500000, 500000);
     projectionMatrix = perspective(30.0, (gl.canvas.width / gl.canvas.height), 0.1, 500000);
-    projectionMatrix = mult(projectionMatrix, rotate(-20, vec3(1, 0, 0)));
+    //projectionMatrix = mult(projectionMatrix, rotate(0, vec3(1, 0, 0)));
     //projectionMatrix = mult(projectionMatrix, rotate(20, vec3(0, 0, 1)));
-    modelViewMatrix = mult(lookAt(eye, at, up), rotate(theta[1], [0, 0, 1]));//rotates the model around the z axis
+    modelViewMatrix = mult(lookAt(eye, at, up), rotate(theta[2], [0, 0, 1]));//rotates the model around the z axis
 
     
     drawables.forEach(function (obj) { // loop over all objects and draw each
@@ -137,8 +137,8 @@ window.onload = function () {
     document.getElementById("heightSlider").onchange = function () { cHeight = event.srcElement.value / 1; };
 
 
-    document.getElementById("rotateLeft").addEventListener("click", function () { theta[1] -= 5.0; });
-    document.getElementById("rotateRight").addEventListener("click", function () { theta[1] += 5.0; });
+    document.getElementById("rotateLeft").addEventListener("click", function () { theta[2] -= 5.0; });
+    document.getElementById("rotateRight").addEventListener("click", function () { theta[2] += 5.0; });
 }
 
 function buildTerrain() {
@@ -170,7 +170,7 @@ function buildTerrain() {
     });
 
     /*Set up the lookat parameters */
-    eye = vec3(-100.0, 100.0, DEMObj.hmax * 15);//camera's location
+    eye = vec3(1, 1, DEMObj.hmax * 18);//camera's location
     at = vec3(0.0, 0.0, 0.0);//where camera focuses
     up = vec3(0.0, 0.0, 1.0);//which direction is up (in this case Z)
 
