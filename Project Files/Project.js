@@ -2,7 +2,7 @@ var projectionMatrix; // global variable to hold the projection matrix
 var modelViewMatrix;
 var program;
 
-var zoom = 45;
+var zoom = 1;
 var cHeight;
 var cMode = 'o';//o = ortho, p = perspective
 var eye, at, up;
@@ -63,9 +63,9 @@ function render(drawables, gl) {
     up = vec3(0.0, 0.0, 1.0);//which direction is up (in this case Z)
 
     if(cMode == 'o')
-        projectionMatrix = ortho(-55000, 55000, -55000, 55000, 1, 500000);
+        projectionMatrix = ortho(-55000 * zoom, 55000 * zoom, -55000 * zoom, 55000 * zoom, 1, 500000);
     else
-        projectionMatrix = perspective(zoom, (gl.canvas.width / gl.canvas.height), 1, 500000);
+        projectionMatrix = perspective(45.0 * zoom, (gl.canvas.width / gl.canvas.height), 1, 500000);
 
     modelViewMatrix = mult(lookAt(eye, at, up), rotate(theta[2], [0, 0, 1]));//rotates the model around the z axis
 
@@ -137,15 +137,16 @@ function makeStrip() {
 /* Set up event callback to start the application */
 window.onload = function () {
 
-    document.getElementById("zoomSlider").onchange = function () { zoom = event.srcElement.value / 1; };//listens for the field of view which gives the zoom effect
+    document.getElementById("zoomSlider").onchange = function () { zoom = event.srcElement.value / 1; };//listens for the modifier to change the zoom
     document.getElementById("heightSlider").onchange = function () { cHeight = (DEMObj.hmax * event.srcElement.value) / 1; };//Listens for the value we will multiply maximum height by. 
 
+    //make this a radio button?
     document.getElementById("perspectiveView").onclick = function () { cMode = 'p'; };//Listens for the value we will multiply maximum height by. 
     document.getElementById("parallelView").onclick = function () { cMode = 'o'; };//Listens for the value we will multiply maximum height by. 
 
-
-    document.getElementById("rotateLeft").addEventListener("click", function () { theta[2] -= 5.0; });
-    document.getElementById("rotateRight").addEventListener("click", function () { theta[2] += 5.0; });
+    //May make this a slider eventually
+    document.getElementById("rotateLeft").addEventListener("click", function () { theta[2] -= 5.0; });//rotate left 5 degrees
+    document.getElementById("rotateRight").addEventListener("click", function () { theta[2] += 5.0}); //rotate right 5 degrees
 }
 
 function buildTerrain() {
