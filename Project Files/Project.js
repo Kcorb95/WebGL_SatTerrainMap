@@ -1,10 +1,12 @@
 var projectionMatrix; // global variable to hold the projection matrix
-var modelViewMatrix;
+var modelViewMatrix; //global variable that holds the model view matrix
 var program;
 
+//zoom is a multiplier to be applied to the default zoom level (45 or 55000) that will either increase or decrease the value giving a zoom effect
 var zoom = 1;
-var cHeight;
-var cMode = 'o';//o = ortho, p = perspective
+var cHeight;//the camera z value in eye. The height is determined by the hMax value of the DEM file. It is then multiplied by a value to increase or decrease the height.
+//flag for switching camera modes
+var cMode = 0;//0 = persp, 1 = ortho
 var eye, at, up;
 
 var theta = [0, 0, 0];//Can be later changed if needed to rotate on multiple different axis
@@ -58,15 +60,16 @@ function render(drawables, gl) {
     // start from a clean frame buffer for this frame
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    eye = vec3(60000, 90000, cHeight);//camera's location
-    at = vec3(0.0, 0.0, 0.0);//where camera focuses
+    eye = vec3(60000, 90000, cHeight);//camera's location just outside grid boundries.
+    at = vec3(0.0, 0.0, 0.0);//where camera focuses on (center of grid)
     up = vec3(0.0, 0.0, 1.0);//which direction is up (in this case Z)
 
-    if(cMode == 'o')
-        projectionMatrix = ortho(-55000 * zoom, 55000 * zoom, -55000 * zoom, 55000 * zoom, 1, 500000);
-    else
+    /* if cMode is 0 we want perspective view. If not we have a 1, and want orthographic view.*/
+    if(cMode == 0)
         projectionMatrix = perspective(45.0 * zoom, (gl.canvas.width / gl.canvas.height), 1, 500000);
-
+    else
+        projectionMatrix = ortho(-55000 * zoom, 55000 * zoom, -55000 * zoom, 55000 * zoom, 1, 500000);
+                       
     modelViewMatrix = mult(lookAt(eye, at, up), rotate(theta[2], [0, 0, 1]));//rotates the model around the z axis
 
     
@@ -83,10 +86,10 @@ function render(drawables, gl) {
 
 /* Constructor for a triangle strip object (initializes the data). */
 function Grid(gl, program, color, color2) {
-    this.program = program; // save my shader program
-    this.color = color; // the color of this triangle strip surface
-    this.color2 = color2;
-    this.vertices = makeStrip(); // this array will hold raw vertex positions
+    this.program = program;//Saves shader program for use in method
+    this.color = color; //The primary color of the grid surface
+    this.color2 = color2;//The secondary color of the grid surface
+    this.vertices = makeStrip();//Array to hold vertex positions
     this.vBufferId = gl.createBuffer(); // reserve a buffer object and store a reference to it
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set active array buffer
@@ -105,7 +108,7 @@ Grid.prototype.draw = function (gl) {
     // send this object's color down to the GPU as a uniform variable
     gl.uniform4fv(this.program.colorLoc, flatten(this.color));
     gl.uniform4fv(this.program.color2Loc, flatten(this.color2));
-
+    //sends the hmin and hmax values to the vertex shader as a float for normalizing heights and setting blending.
     gl.uniform1f(program.hminLoc, DEMObj.hmin);
     gl.uniform1f(program.hmaxLoc, DEMObj.hmax);
 
@@ -116,6 +119,7 @@ Grid.prototype.draw = function (gl) {
 /* Build a triangle strip with random heights. */
 function makeStrip() {
     var i, j;
+    //Setting variables for x/y min/res so we dont have to call it over and over in every loop
     var xmin = DEMObj.xmin;
     var ymin = DEMObj.ymin;
     var xres = DEMObj.xres;
@@ -141,14 +145,14 @@ window.onload = function () {
     document.getElementById("heightSlider").onchange = function () { cHeight = (DEMObj.hmax * event.srcElement.value) / 1; };//Listens for the value we will multiply maximum height by. 
 
     //make this a radio button?
-    document.getElementById("perspectiveView").onclick = function () { cMode = 'p'; };//Listens for the value we will multiply maximum height by. 
-    document.getElementById("parallelView").onclick = function () { cMode = 'o'; };//Listens for the value we will multiply maximum height by. 
+    document.getElementById("perspectiveView").onclick = function () { cMode = 0; };//Listens for the value we will multiply maximum height by. 
+    document.getElementById("parallelView").onclick = function () { cMode = 1; };//Listens for the value we will multiply maximum height by. 
 
     //May make this a slider eventually
     document.getElementById("rotateLeft").addEventListener("click", function () { theta[2] -= 5.0; });//rotate left 5 degrees
     document.getElementById("rotateRight").addEventListener("click", function () { theta[2] += 5.0}); //rotate right 5 degrees
 }
-
+/* This is a callback function that sets up the render and then triggers the render function after DEM file is read.*/ 
 function buildTerrain() {
     // local variable to hold reference to our WebGL context
     var gl = initGL(); // basic WebGL setup for the scene
