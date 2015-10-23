@@ -4,7 +4,7 @@ var program;
 
 var zoom = 45;
 var cHeight;
-
+var cMode = 'o';//o = ortho, p = perspective
 var eye, at, up;
 
 var theta = [0, 0, 0];//Can be later changed if needed to rotate on multiple different axis
@@ -62,12 +62,11 @@ function render(drawables, gl) {
     at = vec3(0.0, 0.0, 0.0);//where camera focuses
     up = vec3(0.0, 0.0, 1.0);//which direction is up (in this case Z)
 
-    // Set up a simple oblique, orthographic projection matrix
-    //left,right,bottom,top,near,far
-    //projectionMatrix = ortho(-zoom, zoom, -zoom, zoom, -500000, 500000);
-    projectionMatrix = perspective(zoom, (gl.canvas.width / gl.canvas.height), 1, 500000);
-    //projectionMatrix = mult(projectionMatrix, rotate(0, vec3(1, 0, 0)));
-    //projectionMatrix = mult(projectionMatrix, rotate(20, vec3(0, 0, 1)));
+    if(cMode == 'o')
+        projectionMatrix = ortho(-55000, 55000, -55000, 55000, 1, 500000);
+    else
+        projectionMatrix = perspective(zoom, (gl.canvas.width / gl.canvas.height), 1, 500000);
+
     modelViewMatrix = mult(lookAt(eye, at, up), rotate(theta[2], [0, 0, 1]));//rotates the model around the z axis
 
     
@@ -138,8 +137,11 @@ function makeStrip() {
 /* Set up event callback to start the application */
 window.onload = function () {
 
-    document.getElementById("zoomSlider").onchange = function () { zoom = event.srcElement.value / 1; };
-    document.getElementById("heightSlider").onchange = function () { cHeight = (DEMObj.hmax * event.srcElement.value) / 1; };
+    document.getElementById("zoomSlider").onchange = function () { zoom = event.srcElement.value / 1; };//listens for the field of view which gives the zoom effect
+    document.getElementById("heightSlider").onchange = function () { cHeight = (DEMObj.hmax * event.srcElement.value) / 1; };//Listens for the value we will multiply maximum height by. 
+
+    document.getElementById("perspectiveView").onclick = function () { cMode = 'p'; };//Listens for the value we will multiply maximum height by. 
+    document.getElementById("parallelView").onclick = function () { cMode = 'o'; };//Listens for the value we will multiply maximum height by. 
 
 
     document.getElementById("rotateLeft").addEventListener("click", function () { theta[2] -= 5.0; });
@@ -174,7 +176,8 @@ function buildTerrain() {
         });
     });
 
-    cHeight = DEMObj.hmax * 2;
+    //sets the current camera height based off of the maximum height value for the current DEM file.
+    cHeight = DEMObj.hmax * 2;//this makes it proportional to the grid
 
     // create a triangle strip object and add it to the list of objects to draw
     drawables.push(new Grid(gl, prog, vec4(0, 0, 0, 1), vec4(1, 1, 0, 1)));
