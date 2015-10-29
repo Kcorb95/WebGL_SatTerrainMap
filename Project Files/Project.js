@@ -65,14 +65,14 @@ function render(drawables, gl) {
     up = vec3(0.0, 0.0, 1.0);//which direction is up (in this case Z)
 
     /* if cMode is 0 we want perspective view. If not we have a 1, and want orthographic view.*/
-    if(cMode == 0)
+    if (cMode == 0)
         projectionMatrix = perspective(45.0 * zoom, (gl.canvas.width / gl.canvas.height), 1, 500000);
     else
         projectionMatrix = ortho(-55000 * zoom, 55000 * zoom, -55000 * zoom, 55000 * zoom, 1, 500000);
-                       
+
     modelViewMatrix = mult(lookAt(eye, at, up), rotate(theta[2], [0, 0, 1]));//rotates the model around the z axis
 
-    
+
     drawables.forEach(function (obj) { // loop over all objects and draw each
         obj.draw(gl);
     });
@@ -114,7 +114,7 @@ Grid.prototype.draw = function (gl) {
 
     // render the primitives!
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.vertices.length);
-}
+};
 
 /* Build a triangle strip with random heights. */
 function makeStrip() {
@@ -141,18 +141,30 @@ function makeStrip() {
 /* Set up event callback to start the application */
 window.onload = function () {
 
-    document.getElementById("zoomSlider").oninput = function () { zoom = event.srcElement.value / 1; };//listens for the modifier to change the zoom
-    document.getElementById("heightSlider").oninput = function () { cHeight = (DEMObj.hmax * event.srcElement.value) / 1; };//Listens for the value we will multiply maximum height by. 
+    document.getElementById("zoomSlider").oninput = function () {
+        zoom = event.srcElement.value / 1;
+    };//listens for the modifier to change the zoom
+    document.getElementById("heightSlider").oninput = function () {
+        cHeight = (DEMObj.hmax * event.srcElement.value) / 1;
+    };//Listens for the value we will multiply maximum height by.
 
     //make this a radio button?
-    document.getElementById("perspectiveView").onclick = function () { cMode = 0; };//Listens for the value we will multiply maximum height by. 
-    document.getElementById("parallelView").onclick = function () { cMode = 1; };//Listens for the value we will multiply maximum height by. 
+    document.getElementById("perspectiveView").onclick = function () {
+        cMode = 0;
+    };//Listens for the value we will multiply maximum height by.
+    document.getElementById("parallelView").onclick = function () {
+        cMode = 1;
+    };//Listens for the value we will multiply maximum height by.
 
     //May make this a slider eventually
-    document.getElementById("rotateLeft").addEventListener("click", function () { theta[2] -= 5.0; });//rotate left 5 degrees
-    document.getElementById("rotateRight").addEventListener("click", function () { theta[2] += 5.0}); //rotate right 5 degrees
-}
-/* This is a callback function that sets up the render and then triggers the render function after DEM file is read.*/ 
+    document.getElementById("rotateLeft").addEventListener("click", function () {
+        theta[2] -= 5.0;
+    });//rotate left 5 degrees
+    document.getElementById("rotateRight").addEventListener("click", function () {
+        theta[2] += 5.0
+    }); //rotate right 5 degrees
+};
+/* This is a callback function that sets up the render and then triggers the render function after DEM file is read.*/
 function buildTerrain() {
     // local variable to hold reference to our WebGL context
     var gl = initGL(); // basic WebGL setup for the scene
@@ -163,9 +175,9 @@ function buildTerrain() {
     // event listener on the button will set the color of each drawable object
     document.getElementById("colorBtn").addEventListener("click", function () {
         var color = vec4(document.getElementById("redIn").value,
-                          document.getElementById("greenIn").value,
-                          document.getElementById("blueIn").value,
-                          1.0);
+            document.getElementById("greenIn").value,
+            document.getElementById("blueIn").value,
+            1.0);
         drawables.forEach(function (obj) {
             obj.color = color;
         });
@@ -173,9 +185,9 @@ function buildTerrain() {
 
     document.getElementById("colorBtn2").addEventListener("click", function () {
         var color2 = vec4(document.getElementById("redIn2").value,
-                          document.getElementById("greenIn2").value,
-                          document.getElementById("blueIn2").value,
-                          1.0);
+            document.getElementById("greenIn2").value,
+            document.getElementById("blueIn2").value,
+            1.0);
         drawables.forEach(function (obj) {
             obj.color2 = color2;
         });
@@ -184,7 +196,7 @@ function buildTerrain() {
     //sets the current camera height based off of the maximum height value for the current DEM file.
     cHeight = DEMObj.hmax * 2;//this makes it proportional to the grid
 
-    document.getElementById("cellName").innerHTML = "<b><font color="+"white"+">"+DEMObj.cellname+"</font></b>";//updates the cellname after dem file is read
+    document.getElementById("cellName").innerHTML = "<b><font color=" + "white" + ">" + DEMObj.cellname + "</font></b>";//updates the cellname after dem file is read
 
 
     // create a triangle strip object and add it to the list of objects to draw
