@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+<head>
+    <title>WebGL Terrain Height Map</title>
+    <meta charset="utf-8" />
+    <style type="text/css">
+        canvas {
+            background: #000;
+        }
+    </style>
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 vPosition; // vert attribs bound to array buffer data
+        uniform vec4 color; // uniform value shared across all vertices
+        uniform vec4 color2; // uniform value shared across all vertices
+        varying vec4 vColor; // sent down to later stages of the pipeline
+        uniform mat4 projectionMatrix; // uniform matrix for viewing projection
+        uniform mat4 modelViewMatrix;
+        uniform float hmax;
+        uniform float hmin;
+        varying float normZ;
+
+        void main()
+        {
+        //Normalize Heights
+        normZ = (vPosition.z - hmin) / (hmax - hmin);
+
+        //mix height with two colors for the blended colors
+        vColor = mix(color, color2, normZ);
+        
+        gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+        }
+    </script>
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        #ifdef GL_ES
+        precision highp float;
+        #endif
+
+        varying vec4 vColor;
+
+        void
+        main()
+        {
+            gl_FragColor = vColor;
+        }
+    </script>
+    <script type="text/javascript" src="../Common/webgl-utils.js"></script>
+    <script type="text/javascript" src="../Common/initShaders.js"></script>
+    <script type="text/javascript" src="../Common/MV.js"></script>
+    <script type="text/javascript" src="Project.js"></script>
+    <script type="text/javascript" src="../lib/ReadDEM.js"></script>
+
+</head>
+<body style="background-color:black;text-align:center;">
+<p id="cellName">
+    <b>
+        <font color="white">Please choose a terrain file</font>
+    </b>
+</p>
+<br />
+
+<canvas id="gl-canvas" width="800" height="800">
+    Oops ...
+    your browser doesn't support the HTML5 canvas element
+</canvas>
+<br />
+
+<input type="file" id="files" name="file" accept=".dem" />
+<script>
+    function handleFileSelect() {
+        var files = document.getElementById('files').files;
+        if (!files.length) {
+            alert('Please select a file!');
+            return;
+        }
+        readDemFile(files[0], buildTerrain);
+    }
+    document.getElementById('files').addEventListener('change', handleFileSelect);
+
+</script>
+<br />
+
+<input id="zoomSlider" type="range" min="0.5" max="2" step="0.5" value="1">
+<br />
+
+<input id="heightSlider" type="range" min="1" max="10" step="1" value="2">
+<br />
+
+<button id="rotateLeft">Rotate Left</button>
+<button id="rotateRight">Rotate Right</button>
+<br />
+<br />
+
+<button id="perspectiveView">Switch to perspective view</button>
+<button id="parallelView">Switch to parallel view</button>
+<br />
+<br />
+
+<input id="redIn" type="text" placeholder="How much red(0-1)?" />
+<input id="greenIn" type="text" placeholder="How much green (0-1)?" />
+<input id="blueIn" type="text" placeholder="How much blue (0-1)?" />
+<button id="colorBtn">Set Primary Color</button>
+<br />
+<br />
+
+<input id="redIn2" type="text" placeholder="How much red(0-1)?" />
+<input id="greenIn2" type="text" placeholder="How much green (0-1)?" />
+<input id="blueIn2" type="text" placeholder="How much blue (0-1)?" />
+<button id="colorBtn2">Set Secondary Color</button>
+</body>
+</html>
