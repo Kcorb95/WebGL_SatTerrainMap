@@ -90,14 +90,16 @@ function Grid(gl, program, color, color2) {
     this.color = color; //The primary color of the grid surface
     this.color2 = color2;//The secondary color of the grid surface
     this.vertices = makeStrip();//Array to hold vertex positions
-    this.vBufferId = gl.createBuffer(); // reserve a buffer object and store a reference to it
 
+    this.vBufferId = gl.createBuffer(); // reserve a buffer object and store a reference to it
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set active array buffer
     // pass data to the graphics hardware (convert JS Array to a typed array)
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(this.vertices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(this.vertices.vertices), gl.STATIC_DRAW);
 
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vertexIndexBuffer);
-    gl.drawElements(gl.TRIANGLES, vertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+    this.eBufferId = gl.createBuffer(); // reserve a buffer object and store a reference to it
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.eBufferId); // set active array buffer
+    // pass data to the graphics hardware (convert JS Array to a typed array)
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.vertices.indices), gl.STATIC_DRAW);
 
 }
 
@@ -117,7 +119,8 @@ Grid.prototype.draw = function (gl) {
     gl.uniform1f(program.hmaxLoc, DEMObj.hmax);
 
     // render the primitives!
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, this.vertices.length);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.eBufferId); // set pos buffer active
+    gl.drawElements(gl.TRIANGLE_STRIP, this.vertices.indices.length, gl.UNSIGNED_SHORT, 0);
 };
 
 /* Build a triangle strip with random heights. */
@@ -128,10 +131,14 @@ function makeStrip() {
     var ymin = DEMObj.ymin;
     var xres = DEMObj.xres;
     var yres = DEMObj.yres;
+    var nrows = 255;
+    var ncols = 255;
     var vertices = []; // to hold the vertices to be drawn as tri-strips
+    var indices = []; // to specify the order in which to draw vertices for a triangle strip
+
     // generate a thin grid using the number of rows and columns from dat file with random heights
-    for (i = 0; i < DEMObj.ncols - 1; i++) {
-        for (j = 0; j < DEMObj.nrows; j++) {
+    for (i = 0; i < ncols - 1; i++) {
+        for (j = 0; j < nrows; j++) {
             vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
             vertices.push(vec3(xmin + (i + 1) * xres, ymin + j * yres, DEMObj.heights[i + 1][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
         }
@@ -139,7 +146,15 @@ function makeStrip() {
         vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j - 1])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
         vertices.push(vec3(xmin, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
     }
-    return vertices;
+
+    for (i = 0; i < (ncols - 1) * nrows; i++) {
+        indices.push(i, i + nrows);
+        if (i % nrows == (nrows - 1)) {
+            indices.push(i + nrows, i + 1);
+        }
+    }
+
+    return {vertices: vertices, indices: indices};
 }
 
 /* Set up event callback to start the application */
