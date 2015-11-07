@@ -131,12 +131,14 @@ function makeStrip() {
     var ymin = DEMObj.ymin;
     var xres = DEMObj.xres;
     var yres = DEMObj.yres;
+    var nrows = 255;
+    var ncols = 255;
     var vertices = []; // to hold the vertices to be drawn as tri-strips
     var indices = []; // to specify the order in which to draw vertices for a triangle strip
 
     // generate a thin grid using the number of rows and columns from dat file with random heights
-    for (i = 0; i < DEMObj.ncols - 1; i++) {
-        for (j = 0; j < DEMObj.nrows; j++) {
+    for (i = 0; i < ncols - 1; i++) {
+        for (j = 0; j < nrows; j++) {
             vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
             vertices.push(vec3(xmin + (i + 1) * xres, ymin + j * yres, DEMObj.heights[i + 1][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
         }
@@ -145,10 +147,10 @@ function makeStrip() {
         vertices.push(vec3(xmin, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
     }
 
-    for (i = 0; i < (255 - 1) * 255; i++) {
-        indices.push(i, i + 255);
-        if (i % 255 == (255 - 1)) {
-            indices.push(i + 255, i + 1);
+    for (i = 0; i < (ncols - 1) * nrows; i++) {
+        indices.push(i, i + nrows);
+        if (i % nrows == (nrows - 1)) {
+            indices.push(i + nrows, i + 1);
         }
     }
 

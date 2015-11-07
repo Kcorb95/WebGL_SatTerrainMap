@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="16b769d4-9bd1-4582-a3c3-741fc0bb6cd5" name="Default" comment="Fixed implementation of Element array buffer. Not sure if done correctly though">
+    <list default="true" id="16b769d4-9bd1-4582-a3c3-741fc0bb6cd5" name="Default" comment="Changed dimensions of indices array to 255x255">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Project Files/Project.js" afterPath="$PROJECT_DIR$/Project Files/Project.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -41,8 +41,8 @@
       <file leaf-file-name="Project.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Project Files/Project.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.45402297">
-              <caret line="149" column="19" selection-start-line="149" selection-start-column="19" selection-end-line="149" selection-end-column="19" />
+            <state vertical-scroll-proportion="0.1367816">
+              <caret line="134" column="19" selection-start-line="134" selection-start-column="19" selection-end-line="134" selection-end-column="19" />
               <folding />
             </state>
           </provider>
@@ -432,7 +432,7 @@
       <workItem from="1446578118417" duration="699000" />
       <workItem from="1446675599311" duration="2831000" />
       <workItem from="1446681437899" duration="22000" />
-      <workItem from="1446931033374" duration="1807000" />
+      <workItem from="1446931033374" duration="2644000" />
     </task>
     <task id="LOCAL-00001" summary="Finaly got intellij to work with project">
       <created>1446077720254</created>
@@ -458,11 +458,17 @@
       <option name="project" value="LOCAL" />
       <updated>1446932322278</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Changed dimensions of indices array to 255x255">
+      <created>1446932856859</created>
+      <option name="number" value="00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1446932856859</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="6271000" />
+    <option name="totallyTimeSpent" value="7108000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -512,7 +518,8 @@
     <MESSAGE value="Added other workspace files from intellij" />
     <MESSAGE value="Began work on project 4" />
     <MESSAGE value="Fixed implementation of Element array buffer. Not sure if done correctly though" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed implementation of Element array buffer. Not sure if done correctly though" />
+    <MESSAGE value="Changed dimensions of indices array to 255x255" />
+    <option name="LAST_COMMIT_MESSAGE" value="Changed dimensions of indices array to 255x255" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
@@ -684,8 +691,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Project Files/Project.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.45402297">
-          <caret line="149" column="19" selection-start-line="149" selection-start-column="19" selection-end-line="149" selection-end-column="19" />
+        <state vertical-scroll-proportion="0.1367816">
+          <caret line="134" column="19" selection-start-line="134" selection-start-column="19" selection-end-line="134" selection-end-column="19" />
           <folding />
         </state>
       </provider>
