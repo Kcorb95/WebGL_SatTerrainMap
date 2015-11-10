@@ -61,7 +61,9 @@ function render(drawables, gl) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     eye = vec3(60000, 90000, cHeight);//camera's location just outside grid boundries.
+    //eye = vec3(-25500, -25500, cHeight);//camera's location just outside grid boundries.
     at = vec3(0.0, 0.0, 0.0);//where camera focuses on (center of grid)
+    //at = vec3(-40000, -40000, 0.0);//where camera focuses on (center of grid)
     up = vec3(0.0, 0.0, 1.0);//which direction is up (in this case Z)
 
     /* if cMode is 0 we want perspective view. If not we have a 1, and want orthographic view.*/
@@ -140,6 +142,8 @@ function makeStrip() {
     // generate a thin grid using the number of rows and columns from dat file with random heights
     for (i = 0; i < DEMObj.ncols - 1; i++) {
         for (j = 0; j < DEMObj.nrows; j++) {
+            //for (i = 566; i < (566+ncols) - 1; i++) {
+            //    for (j = 364; j < (364+nrows); j++) {
             vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
             vertices.push(vec3(xmin + (i + 1) * xres, ymin + j * yres, DEMObj.heights[i + 1][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
         }
@@ -147,9 +151,10 @@ function makeStrip() {
         vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j - 1])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
         vertices.push(vec3(xmin, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
     }
-
-    for (i = 0; i < DEMObj.ncols - 1; i++) {
+    /**
+     for (i = 0; i < DEMObj.ncols; i++) {
         for (j = 0; i < DEMObj.nrows; j++) {
+            // check for corner (0,0) or (ncols-1,0) or (0,nrows-1) or (ncols-1,nrows-1)
             if ((i != 0 && j != 0) || (i != DEMObj.ncols && j != DEMObj.nrows)) {
                 //interior vertex?
             } else if ((i == 0 && j != DEMObj.nrows) || (i == 0 && j != 0)) {
@@ -162,6 +167,7 @@ function makeStrip() {
 
         }
     }
+     **/
     for (i = 0; i < (ncols - 1) * nrows; i++) {
         indices.push(i, i + nrows);
         if (i % nrows == (nrows - 1)) {
