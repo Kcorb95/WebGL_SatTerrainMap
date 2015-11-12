@@ -127,7 +127,6 @@ Grid.prototype.draw = function (gl) {
 
 /* Build a triangle strip with random heights. */
 function makeStrip() {
-    var i, j;
     //Setting variables for x/y min/res so we dont have to call it over and over in every loop
     var xmin = DEMObj.xmin;
     var ymin = DEMObj.ymin;
@@ -140,8 +139,8 @@ function makeStrip() {
     var normals = [];
 
     // generate a thin grid using the number of rows and columns from dat file with random heights
-    for (i = 0; i < DEMObj.ncols - 1; i++) {
-        for (j = 0; j < DEMObj.nrows; j++) {
+    for (var i = 0; i < DEMObj.ncols - 1; i++) {
+        for (var j = 0; j < DEMObj.nrows; j++) {
             //for (i = 566; i < (566+ncols) - 1; i++) {
             //    for (j = 364; j < (364+nrows); j++) {
             vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
@@ -152,8 +151,8 @@ function makeStrip() {
         vertices.push(vec3(xmin, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
     }
 
-    for (i = 0; i < DEMObj.ncols; i++) {
-        for (j = 0; j < DEMObj.nrows; j++) {
+    for (var i = 0; i < DEMObj.ncols; i++) {
+        for (var j = 0; j < DEMObj.nrows; j++) {
             if ((i == 0 && j == 0) || (i == (DEMObj.ncols - 1) && j == 0) || (i == 0 && j == (DEMObj.nrows - 1)) || (i == (DEMObj.ncols - 1) && j == (DEMObj.nrows - 1))) {
                 //corner vertex
                 if ((i == 0 && j == 0)) {
@@ -180,7 +179,7 @@ function makeStrip() {
                 }
             } else if (j == DEMObj.nrows - 1 || j == 0) {
                 //top/bottom edge vertex?
-                if (j == DEMObj.nrows - 10) {
+                if (j == DEMObj.nrows - 1) {
                     console.log("top Edge");
                 } else if (j == 0) {
                     console.log("bottom Edge");
@@ -191,7 +190,7 @@ function makeStrip() {
         }
     }
 
-    for (i = 0; i < (ncols - 1) * nrows; i++) {
+    for (var i = 0; i < (ncols - 1) * nrows; i++) {
         indices.push(i, i + nrows);
         if (i % nrows == (nrows - 1)) {
             indices.push(i + nrows, i + 1);
