@@ -159,45 +159,74 @@ function makeStrip() {
             /**Corners**/
             if ((i == 0 && j == 0) || (i == (DEMObj.ncols - 1) && j == 0) || (i == 0 && j == (DEMObj.nrows - 1)) || (i == (DEMObj.ncols - 1) && j == (DEMObj.nrows - 1))) {
                 if ((i == 0 && j == 0)) {
+                    //bottom left corner 0,0
                     // subtract point at (0,0) from point at (0,1) to get vector
                     // subtract point at (0,0) from point at (1,0) to get vector
                     // cross them and normalize and that's your normal
                     var t1 = subtract(vec3(i, j + 1, 0), vec3(i, j, 0));//top of corner
                     var t2 = subtract(vec3(i + 1, j, 0), vec3(i, j, 0));//right of corner
-                    var normal = normalize(cross(t1, t2));
-                    //bottom left corner 0,0
+                    var normal = normalize(cross(t1, t2));//top to right
                 } else if ((i == (DEMObj.ncols - 1) && j == 0)) {
+                    //bottom right corner ncol,0
                     var t1 = subtract(vec3(i, j - 1, 0), vec3(i, j, 0));//left of corner
                     var t2 = subtract(vec3(i + 1, j, 0), vec3(i, j, 0));//top of corner
-                    var normal = normalize(cross(t1, t2));
-                    //bottom right corner ncol,0
+                    var normal = normalize(cross(t1, t2));//left to top
                 } else if ((i == 0 && j == (DEMObj.nrows - 1))) {
+                    //top left corner 0,nrow
                     var t1 = subtract(vec3(i - 1, j, 0), vec3(i, j, 0));//bottom of corner
                     var t2 = subtract(vec3(i, j + 1, 0), vec3(i, j, 0));//right of corner
-                    var normal = normalize(cross(t1, t2));
-                    //top left corner 0,nrow
+                    var normal = normalize(cross(t1, t2));//bottom to right
                 } else if ((i == (DEMObj.ncols - 1) && j == (DEMObj.nrows - 1))) {
+                    //ncols,nrow corner top right
                     var t1 = subtract(vec3(i, j - 1, 0), vec3(i, j, 0));//left of corner
                     var t2 = subtract(vec3(i - 1, j, 0), vec3(i, j, 0));//bottom of corner
-                    var normal = normalize(cross(t1, t2));
-                    //ncols,nrow corner top right
+                    var normal = normalize(cross(t1, t2));//left to bottom
                 }
                 /**Interior**/
             } else if ((i > 0 && i < DEMObj.ncols - 1) && (j > 0 && j < DEMObj.nrows - 1)) {
                 //interior vertex
+                var t1 = subtract(vec3(i + 1, j, 0), vec3(i, j, 0));//top of middle
+                var t2 = subtract(vec3(i, j + 1, 0), vec3(i, j, 0));//right of middle
+                var t3 = subtract(vec3(i - 1, j, 0), vec3(i, j, 0));//bottom of middle
+                var t4 = subtract(vec3(i, j - 1, 0), vec3(i, j, 0));//left of middle
+                var normal1 = normalize(cross(t1, t2));//top to right
+                var normal2 = normalize(cross(t2, t3));//right to bottom
+                var normal3 = normalize(cross(t3, t4));//bottom to left
+                var normal4 = normalize(cross(t4, t1));//left to top
                 /**L/R Edge**/
             } else if (i == 0 || i == DEMObj.ncols - 1) {
                 if (i == 0) {
                     //Left Edge
+                    var t1 = subtract(vec3(i + 1, j, 0), vec3(i, j, 0));//top of middle
+                    var t2 = subtract(vec3(i - 1, j, 0), vec3(i, j, 0));//bottom of middle
+                    var t3 = subtract(vec3(i, j + 1, 0), vec3(i, j, 0));//right of middle
+                    var normal1 = normalize(cross(t1, t3));//top to right
+                    var normal2 = normalize(cross(t2, t3));//bottom to right
+
                 } else if (i == DEMObj.ncols - 1) {
                     //Right Edge
+                    var t1 = subtract(vec3(i + 1, j, 0), vec3(i, j, 0));//top of middle
+                    var t2 = subtract(vec3(i - 1, j, 0), vec3(i, j, 0));//bottom of middle
+                    var t3 = subtract(vec3(i, j - 1, 0), vec3(i, j, 0));//left of middle
+                    var normal1 = normalize(cross(t1, t3));//top to left
+                    var normal2 = normalize(cross(t2, t3));//bottom to left
                 }
                 /**T/B Edge**/
             } else if (j == DEMObj.nrows - 1 || j == 0) {
                 if (j == DEMObj.nrows - 1) {
                     //Top Edge
+                    var t1 = subtract(vec3(i, j - 1, 0), vec3(i, j, 0));//left of middle
+                    var t2 = subtract(vec3(i, j + 1, 0), vec3(i, j, 0));//right of middle
+                    var t3 = subtract(vec3(i - 1, j, 0), vec3(i, j, 0));//bottom of middle
+                    var normal1 = normalize(cross(t1, t3));//left to bottom
+                    var normal2 = normalize(cross(t2, t3));//right to bottom
                 } else if (j == 0) {
                     //Bottom Edge
+                    var t1 = subtract(vec3(i, j - 1, 0), vec3(i, j, 0));//left of middle
+                    var t2 = subtract(vec3(i, j + 1, 0), vec3(i, j, 0));//right of middle
+                    var t3 = subtract(vec3(i, j + 1, 0), vec3(i, j, 0));//top of middle
+                    var normal1 = normalize(cross(t1, t3));//left to top
+                    var normal2 = normalize(cross(t2, t3));//right to top
                 }
             }
         }
