@@ -11,6 +11,9 @@ var eye, at, up;
 
 var theta = [0, 0, 0];//Can be later changed if needed to rotate on multiple different axis
 
+var lightPosition = vec4(1.0, 1.0, 1.0, 0.0);
+
+
 /* Initialize global WebGL stuff - not object specific */
 function initGL() {
     // local variable to hold a reference to an HTML5 canvas
@@ -153,38 +156,48 @@ function makeStrip() {
 
     for (var i = 0; i < DEMObj.ncols; i++) {
         for (var j = 0; j < DEMObj.nrows; j++) {
+            /**Corners**/
             if ((i == 0 && j == 0) || (i == (DEMObj.ncols - 1) && j == 0) || (i == 0 && j == (DEMObj.nrows - 1)) || (i == (DEMObj.ncols - 1) && j == (DEMObj.nrows - 1))) {
-                //corner vertex
                 if ((i == 0 && j == 0)) {
-                    console.log("0,0 Corner - (bottom left)");
+                    // subtract point at (0,0) from point at (0,1) to get vector
+                    // subtract point at (0,0) from point at (1,0) to get vector
+                    // cross them and normalize and that's your normal
+                    var t1 = subtract(vec3(i, j + 1, 0), vec3(i, j, 0));//top of corner
+                    var t2 = subtract(vec3(i + 1, j, 0), vec3(i, j, 0));//right of corner
+                    var normal = normalize(cross(t1, t2));
+                    //bottom left corner 0,0
                 } else if ((i == (DEMObj.ncols - 1) && j == 0)) {
-                    console.log("ncol,0 Corner - (bottom right)");
+                    var t1 = subtract(vec3(i, j - 1, 0), vec3(i, j, 0));//left of corner
+                    var t2 = subtract(vec3(i + 1, j, 0), vec3(i, j, 0));//top of corner
+                    var normal = normalize(cross(t1, t2));
+                    //bottom right corner ncol,0
                 } else if ((i == 0 && j == (DEMObj.nrows - 1))) {
-                    console.log("0,nrow Corner - (top left)");
+                    var t1 = subtract(vec3(i - 1, j, 0), vec3(i, j, 0));//bottom of corner
+                    var t2 = subtract(vec3(i, j + 1, 0), vec3(i, j, 0));//right of corner
+                    var normal = normalize(cross(t1, t2));
+                    //top left corner 0,nrow
                 } else if ((i == (DEMObj.ncols - 1) && j == (DEMObj.nrows - 1))) {
-                    console.log("ncols,nrow Corner - (top right)");
-                } else {
-                    console.log("I SHOULD NOT BE PRINTED");
+                    var t1 = subtract(vec3(i, j - 1, 0), vec3(i, j, 0));//left of corner
+                    var t2 = subtract(vec3(i - 1, j, 0), vec3(i, j, 0));//bottom of corner
+                    var normal = normalize(cross(t1, t2));
+                    //ncols,nrow corner top right
                 }
-            } else if ((i > 0 && i < DEMObj.ncols) && (j > 0 && j < DEMObj.nrows)) {
+                /**Interior**/
+            } else if ((i > 0 && i < DEMObj.ncols - 1) && (j > 0 && j < DEMObj.nrows - 1)) {
                 //interior vertex
-            } else if (i == 0 || i == DEMObj.ncols) {
-                //Left/Right Edge vertex?
+                /**L/R Edge**/
+            } else if (i == 0 || i == DEMObj.ncols - 1) {
                 if (i == 0) {
-                    console.log("Left Edge");
-                } else if (i == DEMObj.ncols) {
-                    console.log("Right Edge");
-                } else {
-                    console.log("I SHOULD NOT BE PRINTED");
+                    //Left Edge
+                } else if (i == DEMObj.ncols - 1) {
+                    //Right Edge
                 }
+                /**T/B Edge**/
             } else if (j == DEMObj.nrows - 1 || j == 0) {
-                //top/bottom edge vertex?
                 if (j == DEMObj.nrows - 1) {
-                    console.log("top Edge");
+                    //Top Edge
                 } else if (j == 0) {
-                    console.log("bottom Edge");
-                } else {
-                    console.log("I SHOULD NOT BE PRINTED");
+                    //Bottom Edge
                 }
             }
         }
