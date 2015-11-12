@@ -151,23 +151,25 @@ function makeStrip() {
         vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j - 1])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
         vertices.push(vec3(xmin, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
     }
-    /**
-     for (i = 0; i < DEMObj.ncols; i++) {
-        for (j = 0; i < DEMObj.nrows; j++) {
-            // check for corner (0,0) or (ncols-1,0) or (0,nrows-1) or (ncols-1,nrows-1)
-            if ((i != 0 && j != 0) || (i != DEMObj.ncols && j != DEMObj.nrows)) {
-                //interior vertex?
-            } else if ((i == 0 && j != DEMObj.nrows) || (i == 0 && j != 0)) {
-                //Left Edge vertex?
-            } else if ((j == 0 && i != DEMObj.ncols) || (j == 0 && i != 0)) {
-                //top edge vertex?
-            }
-            //right
-            //bottom
 
+    for (i = 0; i < DEMObj.ncols; i++) {
+        for (j = 0; j < DEMObj.nrows; j++) {
+            if ((i == 0 && j == 0) || (i == (DEMObj.ncols - 1) && j == 0) || (i == 0 && j == (DEMObj.nrows - 1)) || (i == (DEMObj.ncols - 1) && j == (DEMObj.nrows - 1))) {
+                //corner vertex
+                console.log("Corner");
+            } else if ((i > 0 && i < DEMObj.ncols) && (j > 0 && j < DEMObj.nrows)) {
+                //interior vertex
+                console.log("Interior");
+            } else if (i == 0 || i == DEMObj.ncols) {
+                //Left/Right Edge vertex?
+                console.log("L/R Edge");
+            } else if (j == 0 || j == DEMObj.nrows) {
+                //top/bottom edge vertex?
+                console.log("T/B Edge");
+            }
         }
     }
-     **/
+
     for (i = 0; i < (ncols - 1) * nrows; i++) {
         indices.push(i, i + nrows);
         if (i % nrows == (nrows - 1)) {
