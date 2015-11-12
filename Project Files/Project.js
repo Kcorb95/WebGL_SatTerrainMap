@@ -156,16 +156,37 @@ function makeStrip() {
         for (j = 0; j < DEMObj.nrows; j++) {
             if ((i == 0 && j == 0) || (i == (DEMObj.ncols - 1) && j == 0) || (i == 0 && j == (DEMObj.nrows - 1)) || (i == (DEMObj.ncols - 1) && j == (DEMObj.nrows - 1))) {
                 //corner vertex
-                console.log("Corner");
+                if ((i == 0 && j == 0)) {
+                    console.log("0,0 Corner - (bottom left)");
+                } else if ((i == (DEMObj.ncols - 1) && j == 0)) {
+                    console.log("ncol,0 Corner - (bottom right)");
+                } else if ((i == 0 && j == (DEMObj.nrows - 1))) {
+                    console.log("0,nrow Corner - (top left)");
+                } else if ((i == (DEMObj.ncols - 1) && j == (DEMObj.nrows - 1))) {
+                    console.log("ncols,nrow Corner - (top right)");
+                } else {
+                    console.log("I SHOULD NOT BE PRINTED");
+                }
             } else if ((i > 0 && i < DEMObj.ncols) && (j > 0 && j < DEMObj.nrows)) {
                 //interior vertex
-                console.log("Interior");
             } else if (i == 0 || i == DEMObj.ncols) {
                 //Left/Right Edge vertex?
-                console.log("L/R Edge");
-            } else if (j == 0 || j == DEMObj.nrows) {
+                if (i == 0) {
+                    console.log("Left Edge");
+                } else if (i == DEMObj.ncols) {
+                    console.log("Right Edge");
+                } else {
+                    console.log("I SHOULD NOT BE PRINTED");
+                }
+            } else if (j == DEMObj.nrows - 1 || j == 0) {
                 //top/bottom edge vertex?
-                console.log("T/B Edge");
+                if (j == DEMObj.nrows - 10) {
+                    console.log("top Edge");
+                } else if (j == 0) {
+                    console.log("bottom Edge");
+                } else {
+                    console.log("I SHOULD NOT BE PRINTED");
+                }
             }
         }
     }
