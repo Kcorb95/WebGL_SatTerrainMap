@@ -96,6 +96,14 @@ function Grid(gl, program, color, color2) {
     this.color2 = color2;//The secondary color of the grid surface
     this.vertices = makeStrip();//Array to hold vertex positions
 
+    this.nBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.nBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(this.vertices.normals), gl.STATIC_DRAW);
+
+    this.vNormal = gl.getAttribLocation(program, "vNormal");
+    gl.vertexAttribPointer(this.vNormal, 4, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(this.vNormal);
+
     this.vBufferId = gl.createBuffer(); // reserve a buffer object and store a reference to it
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set active array buffer
     // pass data to the graphics hardware (convert JS Array to a typed array)
@@ -115,6 +123,9 @@ Grid.prototype.draw = function (gl) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set pos buffer active
     // map position buffer data to the corresponding vertex shader attribute
     gl.vertexAttribPointer(this.program.vposLoc, 3, gl.FLOAT, false, 0, 0);
+
+    gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"),
+        flatten(lightPosition));
 
     // send this object's color down to the GPU as a uniform variable
     gl.uniform4fv(this.program.colorLoc, flatten(this.color));
@@ -242,7 +253,7 @@ function makeStrip() {
         }
     }
 
-    return {vertices: vertices, indices: indices};
+    return {vertices: vertices, indices: indices, normals: normals};
 }
 
 /* Set up event callback to start the application */

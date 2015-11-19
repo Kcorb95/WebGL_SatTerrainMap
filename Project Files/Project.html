@@ -10,6 +10,7 @@
     </style>
     <script id="vertex-shader" type="x-shader/x-vertex">
         attribute vec4 vPosition; // vert attribs bound to array buffer data
+        attribute vec3 vNormal;
         uniform vec4 color; // uniform value shared across all vertices
         uniform vec4 color2; // uniform value shared across all vertices
         varying vec4 vColor; // sent down to later stages of the pipeline
@@ -17,10 +18,26 @@
         uniform mat4 modelViewMatrix;
         uniform float hmax;
         uniform float hmin;
+        uniform vec4 lightPosition;
         varying float normZ;
 
         void main()
         {
+        vec3 pos = -(modelViewMatrix * vPosition).xyz;
+        //fixed light position
+
+        vec3 light = lightPosition.xyz;
+        vec3 L = normalize( light - pos );
+
+        vec3 E = normalize( -pos );
+        vec3 H = normalize( L + E );
+
+        vec4 NN = vec4(vNormal,0);
+
+        // Transform vertex normal into eye coordinates
+
+        vec3 N = normalize( (modelViewMatrix*NN).xyz);
+
         //Normalize Heights
         normZ = (vPosition.z - hmin) / (hmax - hmin);
 
