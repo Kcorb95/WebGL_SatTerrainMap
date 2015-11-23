@@ -123,8 +123,6 @@ Grid.prototype.draw = function (gl) {
     // map position buffer data to the corresponding vertex shader attribute
     gl.vertexAttribPointer(this.program.vposLoc, 3, gl.FLOAT, false, 0, 0);
 
-    gl.vertexAttribPointer(this.program.vnormLoc, 4, gl.FLOAT, false, 0, 0);
-
     // send this object's color down to the GPU as a uniform variable
     gl.uniform4fv(this.program.colorLoc, flatten(this.color));
     gl.uniform4fv(this.program.color2Loc, flatten(this.color2));
