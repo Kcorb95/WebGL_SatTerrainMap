@@ -13,7 +13,6 @@ var theta = [0, 0, 0];//Can be later changed if needed to rotate on multiple dif
 
 var lightPosition = vec4(1.0, 1.0, 1.0, 0.0);
 
-
 /* Initialize global WebGL stuff - not object specific */
 function initGL() {
     // local variable to hold a reference to an HTML5 canvas
@@ -88,6 +87,8 @@ function render(drawables, gl) {
 
     gl.uniformMatrix4fv(gl.getUniformLocation(program, "modelViewMatrix"), false, flatten(modelViewMatrix));
     gl.uniformMatrix4fv(program.projLoc, false, flatten(projectionMatrix));
+
+    gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), flatten(lightPosition));
 
     // queue up this same callback for the next frame
     requestAnimFrame(renderScene);

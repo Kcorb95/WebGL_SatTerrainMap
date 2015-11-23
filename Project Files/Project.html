@@ -14,21 +14,22 @@
         uniform vec4 color; // uniform value shared across all vertices
         uniform vec4 color2; // uniform value shared across all vertices
         varying vec4 vColor; // sent down to later stages of the pipeline
+        varying float normZ;
         uniform mat4 projectionMatrix; // uniform matrix for viewing projection
         uniform mat4 modelViewMatrix;
         uniform float hmax;
         uniform float hmin;
-        varying float normZ;
+        uniform vec4 lightPosition;
 
         void main()
         {
-        //Normalize Heights
-        normZ = (vPosition.z - hmin) / (hmax - hmin);
+            //Normalize Heights
+            normZ = (vPosition.z - hmin) / (hmax - hmin);
 
-        //mix height with two colors for the blended colors
-        vColor = mix(color, color2, normZ);
+            //mix height with two colors for the blended colors
+            vColor = mix(color, color2, normZ);
         
-        gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+            gl_Position = projectionMatrix * modelViewMatrix * vPosition;
         }
     </script>
     <script id="fragment-shader" type="x-shader/x-fragment">
