@@ -35,10 +35,14 @@ function initGL() {
 function loadShaderProgram(gl) {
     // use the existing program if given, otherwise use our own defaults
     program = initShaders(gl, "vertex-shader", "fragment-shader");
+
     // get the position attribute and save it to our program object
     //   then enable the vertex attribute array
     program.vposLoc = gl.getAttribLocation(program, "vPosition");
     gl.enableVertexAttribArray(program.vposLoc);
+
+    program.vnormLoc = gl.getAttribLocation(program, "vNormal");
+
     // get the address of the uniform variable and save it to our program object
     program.colorLoc = gl.getUniformLocation(program, "color");
     program.color2Loc = gl.getUniformLocation(program, "color2");
@@ -63,8 +67,8 @@ function render(drawables, gl) {
     // start from a clean frame buffer for this frame
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    eye = vec3(60000, 90000, cHeight);//camera's location just outside grid boundries.
-    //eye = vec3(-25500, -25500, cHeight);//camera's location just outside grid boundries.
+    eye = vec3(60000, 90000, cHeight);//camera's location just outside grid boundaries.
+    //eye = vec3(-25500, -25500, cHeight);//camera's location just outside grid boundaries.
     at = vec3(0.0, 0.0, 0.0);//where camera focuses on (center of grid)
     //at = vec3(-40000, -40000, 0.0);//where camera focuses on (center of grid)
     up = vec3(0.0, 0.0, 1.0);//which direction is up (in this case Z)
@@ -94,26 +98,21 @@ function Grid(gl, program, color, color2) {
     this.program = program;//Saves shader program for use in method
     this.color = color; //The primary color of the grid surface
     this.color2 = color2;//The secondary color of the grid surface
-    this.vertices = makeStrip();//Array to hold vertex positions
-
-    this.nBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.nBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(this.vertices.normals), gl.STATIC_DRAW);
-
-    this.vNormal = gl.getAttribLocation(program, "vNormal");
-    gl.vertexAttribPointer(this.vNormal, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(this.vNormal);
+    this.data = makeStrip();//Array to hold vertex positions
 
     this.vBufferId = gl.createBuffer(); // reserve a buffer object and store a reference to it
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set active array buffer
     // pass data to the graphics hardware (convert JS Array to a typed array)
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(this.vertices.vertices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(this.data.vertices), gl.STATIC_DRAW);
 
     this.eBufferId = gl.createBuffer(); // reserve a buffer object and store a reference to it
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.eBufferId); // set active array buffer
     // pass data to the graphics hardware (convert JS Array to a typed array)
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.vertices.indices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.data.indices), gl.STATIC_DRAW);
 
+    this.nBufferId = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.nBufferId);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(this.data.normals), gl.STATIC_DRAW);
 }
 
 /* Method allows an object to render itself */
@@ -124,8 +123,7 @@ Grid.prototype.draw = function (gl) {
     // map position buffer data to the corresponding vertex shader attribute
     gl.vertexAttribPointer(this.program.vposLoc, 3, gl.FLOAT, false, 0, 0);
 
-    gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"),
-        flatten(lightPosition));
+    gl.vertexAttribPointer(this.program.vnormLoc, 4, gl.FLOAT, false, 0, 0);
 
     // send this object's color down to the GPU as a uniform variable
     gl.uniform4fv(this.program.colorLoc, flatten(this.color));
@@ -136,7 +134,7 @@ Grid.prototype.draw = function (gl) {
 
     // render the primitives!
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.eBufferId); // set pos buffer active
-    gl.drawElements(gl.TRIANGLE_STRIP, this.vertices.indices.length, gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(gl.TRIANGLE_STRIP, this.data.indices.length, gl.UNSIGNED_SHORT, 0);
 };
 
 /* Build a triangle strip with random heights. */
