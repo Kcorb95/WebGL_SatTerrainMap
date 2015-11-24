@@ -52,6 +52,8 @@
             float Kd = max( dot(L, N), 0.0 );
             vec4  diffuse = Kd*diffuseProduct;
 
+            vColor = diffuse;
+
             gl_Position = projectionMatrix * modelViewMatrix * vPosition;
         }
     </script>
