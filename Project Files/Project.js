@@ -162,11 +162,11 @@ function makeStrip() {
             //for (i = 566; i < (566+ncols) - 1; i++) {
             //    for (j = 364; j < (364+nrows); j++) {
             vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-            vertices.push(vec3(xmin + (i + 1) * xres, ymin + j * yres, DEMObj.heights[i + 1][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+            //vertices.push(vec3(xmin + (i + 1) * xres, ymin + j * yres, DEMObj.heights[i + 1][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
         }
         // need to repeat the ending points to make degenerate triangle ("stutter"), this will be two extra vertices
-        vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j - 1])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-        vertices.push(vec3(xmin, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+        //vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j - 1])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+        //vertices.push(vec3(xmin, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
     }
     var normal, normal1, normal2, normal3, normal4;
     for (var i = 0; i < DEMObj.ncols; i++) {
@@ -256,8 +256,8 @@ function makeStrip() {
             indices.push(i + nrows, i + 1);
         }
     }
-    console.log("normals[1][1]: " + normals[1][1]);
-    console.log("normals[ncols-2][nrows-2]: " + normals[DEMObj.ncols - 2][DEMObj.nrows - 2]);
+    console.log("normals[1]: " + normals[1]);
+    console.log("normals[ncols-2+nrows-2]: " + normals[(DEMObj.ncols - 2) + (DEMObj.nrows - 2)]);
 
     return {vertices: vertices, indices: indices, normals: normals};
 }
