@@ -179,31 +179,33 @@ function makeStrip() {
                     // subtract point at (0,0) from point at (0,1) to get vector
                     // subtract point at (0,0) from point at (1,0) to get vector
                     // cross them and normalize and that's your normal
-                    var t1 = subtract(vec3(i, j + 1, 0), vec3(i, j, 0));//top of corner
-                    var t2 = subtract(vec3(i + 1, j, 0), vec3(i, j, 0));//right of corner
+                    var t1 = subtract(vertices[i + 1] * nrows + vertices[j], vertices[i] * nrows + vertices[j]);//top of corner
+                    var t2 = subtract(vertices[i] * nrows + vertices[j + 1], vertices[i] * nrows + vertices[j]);//right of corner
                 } else if ((i == (DEMObj.ncols - 1) && j == 0)) {
                     //bottom right corner ncol,0
-                    var t1 = subtract(vec3(i, j - 1, 0), vec3(i, j, 0));//left of corner
-                    var t2 = subtract(vec3(i + 1, j, 0), vec3(i, j, 0));//top of corner
+                    var t1 = subtract(vertices[i - 1] * nrows + vertices[j], vertices[i] * nrows + vertices[j]);//left of corner
+                    var t2 = subtract(vec3(vertices[i], vertices[j + 1], 0), vertices[i] * nrows + vertices[j]);//top of corner
                 } else if ((i == 0 && j == (DEMObj.nrows - 1))) {
                     //top left corner 0,nrow
-                    var t1 = subtract(vec3(i - 1, j, 0), vec3(i, j, 0));//bottom of corner
-                    var t2 = subtract(vec3(i, j + 1, 0), vec3(i, j, 0));//right of corner
+                    var t1 = subtract(vec3(vertices[i], vertices[j - 1], 0), vertices[i] * nrows + vertices[j]);//bottom of corner
+                    var t2 = subtract(vec3(vertices[i + 1], vertices[j], 0), vertices[i] * nrows + vertices[j]);//right of corner
                 } else if ((i == (DEMObj.ncols - 1) && j == (DEMObj.nrows - 1))) {
                     //ncols,nrow corner top right
-                    var t1 = subtract(vec3(i, j - 1, 0), vec3(i, j, 0));//left of corner
-                    var t2 = subtract(vec3(i - 1, j, 0), vec3(i, j, 0));//bottom of corner
+                    var t1 = subtract(vec3(vertices[i - 1], vertices[j], 0), vertices[i] * nrows + vertices[j]);//left of corner
+                    var t2 = subtract(vec3(vertices[i], vertices[j - 1], 0), vertices[i] * nrows + vertices[j]);//bottom of corner
                 }
                 normal = normalize(cross(t1, t2));
+                console.log("t1: " + t1);
+                console.log("t2: " + t2);
                 normals.push(normal);
 
                 /**Interior**/
             } else if ((i > 0 && i < DEMObj.ncols - 1) && (j > 0 && j < DEMObj.nrows - 1)) {
                 //interior vertex
-                var t1 = subtract(vec3(i + 1, j, 0), vec3(i, j, 0));//top of middle
-                var t2 = subtract(vec3(i, j - 1, 0), vec3(i, j, 0));//left of middle
-                var t3 = subtract(vec3(i - 1, j, 0), vec3(i, j, 0));//bottom of middle
-                var t4 = subtract(vec3(i, j + 1, 0), vec3(i, j, 0));//right of middle
+                var t1 = subtract(vec3(vertices[i + 1], vertices[j], 0), vertices[i] * nrows + vertices[j]);//top of middle
+                var t2 = subtract(vec3(vertices[i], vertices[j - 1], 0), vertices[i] * nrows + vertices[j]);//left of middle
+                var t3 = subtract(vec3(vertices[i - 1], vertices[j], 0), vertices[i] * nrows + vertices[j]);//bottom of middle
+                var t4 = subtract(vec3(vertices[i], vertices[j + 1], 0), vertices[i] * nrows + vertices[j]);//right of middle
                 normal1 = cross(t1, t2);//top to left
                 normal2 = cross(t2, t3);//left to bottom
                 normal3 = cross(t3, t4);//bottom to right
@@ -215,14 +217,14 @@ function makeStrip() {
             } else if (i == 0 || i == DEMObj.ncols - 1) {
                 if (i == 0) {
                     //Left Edge
-                    var t1 = subtract(vec3(i - 1, j, 0), vec3(i, j, 0));//bottom of middle
-                    var t2 = subtract(vec3(i, j + 1, 0), vec3(i, j, 0));//right of middle
-                    var t3 = subtract(vec3(i + 1, j, 0), vec3(i, j, 0));//top of middle
+                    var t1 = subtract(vec3(vertices[i], vertices[j - 1], 0), vec3(vertices[i], vertices[j], 0));//bottom of middle
+                    var t2 = subtract(vec3(vertices[i + 1], vertices[j], 0), vec3(vertices[i], vertices[j], 0));//right of middle
+                    var t3 = subtract(vec3(vertices[i], vertices[j + 1], 0), vec3(vertices[i], vertices[j], 0));//top of middle
                 } else if (i == DEMObj.ncols - 1) {
                     //Right Edge
-                    var t1 = subtract(vec3(i + 1, j, 0), vec3(i, j, 0));//top of middle
-                    var t2 = subtract(vec3(i, j - 1, 0), vec3(i, j, 0));//left of middle
-                    var t3 = subtract(vec3(i - 1, j, 0), vec3(i, j, 0));//bottom of middle
+                    var t1 = subtract(vec3(vertices[i], vertices[j + 1], 0), vec3(vertices[i], vertices[j], 0));//top of middle
+                    var t2 = subtract(vec3(vertices[i - 1], vertices[j], 0), vec3(vertices[i], vertices[j], 0));//left of middle
+                    var t3 = subtract(vec3(vertices[i], vertices[j - 1], 0), vec3(vertices[i], vertices[j], 0));//bottom of middle
                 }
                 normal1 = cross(t1, t2);
                 normal2 = cross(t2, t3);
@@ -233,14 +235,14 @@ function makeStrip() {
             } else if (j == DEMObj.nrows - 1 || j == 0) {
                 if (j == DEMObj.nrows - 1) {
                     //Top Edge
-                    var t1 = subtract(vec3(i, j - 1, 0), vec3(i, j, 0));//left of middle
-                    var t2 = subtract(vec3(i - 1, j, 0), vec3(i, j, 0));//bottom of middle
-                    var t3 = subtract(vec3(i, j + 1, 0), vec3(i, j, 0));//right of middle
+                    var t1 = subtract(vec3(vertices[i], vertices[j - 1], 0), vec3(vertices[i], vertices[j], 0));//left of middle
+                    var t2 = subtract(vec3(vertices[i - 1], vertices[j], 0), vec3(vertices[i], vertices[j], 0));//bottom of middle
+                    var t3 = subtract(vec3(vertices[i], vertices[j + 1], 0), vec3(vertices[i], vertices[j], 0));//right of middle
                 } else if (j == 0) {
                     //Bottom Edge
-                    var t1 = subtract(vec3(i, j + 1, 0), vec3(i, j, 0));//right of middle
-                    var t2 = subtract(vec3(i, j + 1, 0), vec3(i, j, 0));//top of middle
-                    var t3 = subtract(vec3(i, j - 1, 0), vec3(i, j, 0));//left of middle
+                    var t1 = subtract(vec3(vertices[i], vertices[j + 1], 0), vec3(vertices[i], vertices[j], 0));//right of middle
+                    var t2 = subtract(vec3(vertices[i], vertices[j + 1], 0), vec3(vertices[i], vertices[j], 0));//top of middle
+                    var t3 = subtract(vec3(vertices[i], vertices[j - 1], 0), vec3(vertices[i], vertices[j], 0));//left of middle
                 }
                 normal1 = cross(t1, t2);
                 normal2 = cross(t2, t3);
