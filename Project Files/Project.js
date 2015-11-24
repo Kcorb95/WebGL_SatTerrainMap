@@ -117,6 +117,10 @@ function Grid(gl, program, color, color2) {
     this.nBufferId = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.nBufferId);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(this.data.normals), gl.STATIC_DRAW);
+
+    program.vnormLoc = gl.getAttribLocation(program, "vNormal");
+    gl.vertexAttribPointer(program.vnormLoc, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(program.vnormLoc);
 }
 
 /* Method allows an object to render itself */
