@@ -12,6 +12,7 @@ var eye, at, up;
 var theta = [0, 0, 0];//Can be later changed if needed to rotate on multiple different axis
 
 var lightPosition = vec4(1.0, 1.0, 1.0, 0.0);
+var lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 
 /* Initialize global WebGL stuff - not object specific */
 function initGL() {

@@ -20,14 +20,37 @@
         uniform float hmax;
         uniform float hmin;
         uniform vec4 lightPosition;
+        uniform vec4 lightDiffuse;
 
         void main()
         {
+            vec3 pos = -(modelViewMatrix * vPosition).xyz;
+
+            //fixed light position
+
+            vec3 light = lightPosition.xyz;
+            vec3 L = normalize( light - pos );
+
+
+            vec3 E = normalize( -pos );
+            vec3 H = normalize( L + E );
+
+            vec4 NN = vec4(vNormal,0);
+
+            // Transform vertex normal into eye coordinates
+
+            vec3 N = normalize( (modelViewMatrix*NN).xyz);
+
             //Normalize Heights
             normZ = (vPosition.z - hmin) / (hmax - hmin);
 
             //mix height with two colors for the blended colors
             vColor = mix(color, color2, normZ);
+
+            vec4 diffuseProduct = vColor * lightDiffuse;
+
+            float Kd = max( dot(L, N), 0.0 );
+            vec4  diffuse = Kd*diffuseProduct;
         
             gl_Position = projectionMatrix * modelViewMatrix * vPosition;
         }
