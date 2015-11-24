@@ -90,6 +90,8 @@ function render(drawables, gl) {
     gl.uniformMatrix4fv(program.projLoc, false, flatten(projectionMatrix));
 
     gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), flatten(lightPosition));
+    gl.uniform4fv(gl.getUniformLocation(program, "lightDiffuse"), flatten(lightDiffuse));
+
 
     // queue up this same callback for the next frame
     requestAnimFrame(renderScene);
