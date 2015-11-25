@@ -155,48 +155,44 @@ function makeStrip() {
     var normals = [];
 
     // generate a thin grid using the number of rows and columns from dat file with random heights
-    for (var i = 0; i < DEMObj.ncols - 1; i++) {
+    for (var i = 0; i < DEMObj.ncols; i++) {
         for (var j = 0; j < DEMObj.nrows; j++) {
             vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
         }
     }
     var normal, normal1, normal2, normal3, normal4;
-    for (var i = 0; i < ncols; i++) {
-        for (var j = 0; j < nrows; j++) {
+    for (var i = 0; i < DEMObj.ncols; i++) {
+        for (var j = 0; j < DEMObj.nrows; j++) {
 
             /**Corners**/
-            if ((i == 0 && j == 0) || (i == (ncols - 1) && j == 0) || (i == 0 && j == (nrows - 1)) || (i == (ncols - 1) && j == (nrows - 1))) {
+            if ((i == 0 && j == 0) || (i == (DEMObj.ncols - 1) && j == 0) || (i == 0 && j == (DEMObj.nrows - 1)) || (i == (DEMObj.ncols - 1) && j == (DEMObj.nrows - 1))) {
                 if ((i == 0 && j == 0)) {
                     //bottom left corner 0,0
-                    console.log("bottom left");
-                    var t1 = subtract(vertices[i * nrows + (j + 1)], vertices[i * nrows + j]);//top of corner
-                    var t2 = subtract(vertices[(i + 1) * nrows + j], vertices[i * nrows + j]);//right of corner
-                } else if ((i == (ncols - 1) && j == 0)) {
+                    var t1 = subtract(vertices[i * DEMObj.nrows + (j + 1)], vertices[i * DEMObj.nrows + j]);//top of corner
+                    var t2 = subtract(vertices[(i + 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//right of corner
+                } else if ((i == (DEMObj.ncols - 1) && j == 0)) {
                     //bottom right corner ncol,0
-                    console.log("bottom right");
-                    var t1 = subtract(vertices[(i - 1) * nrows + j], vertices[i * nrows + j]);//left of corner
-                    var t2 = subtract(vertices[i * nrows + (j + 1)], vertices[i * nrows + j]);//top of corner
-                } else if ((i == 0 && j == (nrows - 1))) {
+                    var t1 = subtract(vertices[(i - 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//left of corner
+                    var t2 = subtract(vertices[i * DEMObj.nrows + (j + 1)], vertices[i * DEMObj.nrows + j]);//top of corner
+                } else if ((i == 0 && j == (DEMObj.nrows - 1))) {
                     //top left corner 0,nrow
-                    console.log("Top left");
-                    var t1 = subtract(vertices[i * nrows + (j - 1)], vertices[i * nrows + j]);//bottom of corner
-                    var t2 = subtract(vertices[(i + 1) * nrows + j], vertices[i * nrows + j]);//right of corner
-                } else if ((i == (ncols - 1) && j == (nrows - 1))) {
+                    var t1 = subtract(vertices[i * DEMObj.nrows + (j - 1)], vertices[i * DEMObj.nrows + j]);//bottom of corner
+                    var t2 = subtract(vertices[(i + 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//right of corner
+                } else if ((i == (DEMObj.ncols - 1) && j == (DEMObj.nrows - 1))) {
                     //ncols,nrow corner top right
-                    console.log("Top Right");
-                    var t1 = subtract(vertices[(i - 1) * nrows + j], vertices[i * nrows + j]);//left of corner
-                    var t2 = subtract(vertices[i * nrows + (j - 1)], vertices[i * nrows + j]);//bottom of corner
+                    var t1 = subtract(vertices[(i - 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//left of corner
+                    var t2 = subtract(vertices[i * DEMObj.nrows + (j - 1)], vertices[i * DEMObj.nrows + j]);//bottom of corner
                 }
                 normal = normalize(cross(t1, t2));
                 normals.push(normal);
 
                 /**Interior**/
-            } else if ((i > 0 && i < ncols - 1) && (j > 0 && j < nrows - 1)) {
+            } else if ((i > 0 && i < DEMObj.ncols - 1) && (j > 0 && j < DEMObj.nrows - 1)) {
                 //interior vertex
-                var t1 = subtract(vertices[i * nrows + (j + 1)], vertices[i * nrows + j]);//top of middle
-                var t2 = subtract(vertices[(i - 1) * nrows + j], vertices[i * nrows + j]);//left of middle
-                var t3 = subtract(vertices[i * nrows + (j - 1)], vertices[i * nrows + j]);//bottom of middle
-                var t4 = subtract(vertices[(i + 1) * nrows + j], vertices[i * nrows + j]);//right of middle
+                var t1 = subtract(vertices[i * DEMObj.nrows + (j + 1)], vertices[i * DEMObj.nrows + j]);//top of middle
+                var t2 = subtract(vertices[(i - 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//left of middle
+                var t3 = subtract(vertices[i * DEMObj.nrows + (j - 1)], vertices[i * DEMObj.nrows + j]);//bottom of middle
+                var t4 = subtract(vertices[(i + 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//right of middle
                 normal1 = cross(t1, t2);//top to left
                 normal2 = cross(t2, t3);//left to bottom
                 normal3 = cross(t3, t4);//bottom to right
@@ -205,19 +201,17 @@ function makeStrip() {
                 normals.push(normal);
 
                 /**L/R Edge**/
-            } else if (i == 0 || i == ncols - 1) {
+            } else if (i == 0 || i == DEMObj.ncols - 1) {
                 if (i == 0) {
                     //Left Edge
-                    console.log("Left Edge");
-                    var t1 = subtract(vertices[i * nrows + (j - 1)], vertices[i * nrows + j]);//bottom of middle
-                    var t2 = subtract(vertices[(i + 1) * nrows + j], vertices[i * nrows + j]);//right of middle
-                    var t3 = subtract(vertices[i * nrows + (j + 1)], vertices[i * nrows + j]);//top of middle
-                } else if (i == ncols - 1) {
+                    var t1 = subtract(vertices[i * DEMObj.nrows + (j - 1)], vertices[i * DEMObj.nrows + j]);//bottom of middle
+                    var t2 = subtract(vertices[(i + 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//right of middle
+                    var t3 = subtract(vertices[i * DEMObj.nrows + (j + 1)], vertices[i * DEMObj.nrows + j]);//top of middle
+                } else if (i == DEMObj.ncols - 1) {
                     //Right Edge
-                    console.log("Right Edge");
-                    var t1 = subtract(vertices[i * nrows + (j + 1)], vertices[i * nrows + j]);//top of middle
-                    var t2 = subtract(vertices[(i - 1) * nrows + j], vertices[i * nrows + j]);//left of middle
-                    var t3 = subtract(vertices[i * nrows + (j - 1)], vertices[i * nrows + j]);//bottom of middle
+                    var t1 = subtract(vertices[i * DEMObj.nrows + (j + 1)], vertices[i * DEMObj.nrows + j]);//top of middle
+                    var t2 = subtract(vertices[(i - 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//left of middle
+                    var t3 = subtract(vertices[i * DEMObj.nrows + (j - 1)], vertices[i * DEMObj.nrows + j]);//bottom of middle
                 }
                 normal1 = cross(t1, t2);
                 normal2 = cross(t2, t3);
@@ -225,22 +219,20 @@ function makeStrip() {
                 normals.push(normal);
 
                 /**T/B Edge**/
-            } else if (j == nrows - 1 || j == 0) {
-                if (j == nrows - 1) {
+            } else if (j == DEMObj.nrows - 1 || j == 0) {
+                if (j == DEMObj.nrows - 1) {
                     //Top Edge
-                    console.log("Top Edge");
-                    var t1 = subtract(vertices[(i - 1) * nrows + j], vertices[i * nrows + j]);//left of middle
-                    var t2 = subtract(vertices[i * nrows + (j - 1)], vertices[i * nrows + j]);//bottom of middle
-                    var t3 = subtract(vertices[(i + 1) * nrows + j], vertices[i * nrows + j]);//right of middle
+                    var t1 = subtract(vertices[(i - 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//left of middle
+                    var t2 = subtract(vertices[i * DEMObj.nrows + (j - 1)], vertices[i * DEMObj.nrows + j]);//bottom of middle
+                    var t3 = subtract(vertices[(i + 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//right of middle
                 } else if (j == 0) {
                     //Bottom Edge
-                    console.log("Bottom Edge");
-                    var t10 = subtract(vertices[(i + 1) * nrows + j], vertices[i * nrows + j]);//right of middle
-                    var t20 = subtract(vertices[i * nrows + (j + 1)], vertices[i * nrows + j]);//top of middle
-                    var t30 = subtract(vertices[(i - 1) * nrows + j], vertices[i * nrows + j]);//left of middle
+                    var t1 = subtract(vertices[(i + 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//right of middle
+                    var t2 = subtract(vertices[i * DEMObj.nrows + (j + 1)], vertices[i * DEMObj.nrows + j]);//top of middle
+                    var t3 = subtract(vertices[(i - 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//left of middle
                 }
-                normal1 = cross(t10, t20);
-                normal2 = cross(t20, t30);
+                normal1 = cross(t1, t2);
+                normal2 = cross(t2, t3);
                 normal = normalize(add(normal1, normal2));
                 normals.push(normal);
             }
