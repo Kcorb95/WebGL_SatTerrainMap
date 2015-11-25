@@ -68,9 +68,7 @@ function render(drawables, gl) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     eye = vec3(60000, 90000, cHeight);//camera's location just outside grid boundaries.
-    //eye = vec3(-25500, -25500, cHeight);//camera's location just outside grid boundaries.
     at = vec3(0.0, 0.0, 0.0);//where camera focuses on (center of grid)
-    //at = vec3(-40000, -40000, 0.0);//where camera focuses on (center of grid)
     up = vec3(0.0, 0.0, 1.0);//which direction is up (in this case Z)
 
     /* if cMode is 0 we want perspective view. If not we have a 1, and want orthographic view.*/
@@ -159,14 +157,8 @@ function makeStrip() {
     // generate a thin grid using the number of rows and columns from dat file with random heights
     for (var i = 0; i < DEMObj.ncols - 1; i++) {
         for (var j = 0; j < DEMObj.nrows; j++) {
-            //for (i = 566; i < (566+ncols) - 1; i++) {
-            //    for (j = 364; j < (364+nrows); j++) {
             vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-            //vertices.push(vec3(xmin + (i + 1) * xres, ymin + j * yres, DEMObj.heights[i + 1][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
         }
-        // need to repeat the ending points to make degenerate triangle ("stutter"), this will be two extra vertices
-        //vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j - 1])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
-        //vertices.push(vec3(xmin, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
     }
     var normal, normal1, normal2, normal3, normal4;
     for (var i = 0; i < DEMObj.ncols; i++) {
@@ -176,9 +168,6 @@ function makeStrip() {
             if ((i == 0 && j == 0) || (i == (DEMObj.ncols - 1) && j == 0) || (i == 0 && j == (DEMObj.nrows - 1)) || (i == (DEMObj.ncols - 1) && j == (DEMObj.nrows - 1))) {
                 if ((i == 0 && j == 0)) {
                     //bottom left corner 0,0
-                    // subtract point at (0,0) from point at (0,1) to get vector
-                    // subtract point at (0,0) from point at (1,0) to get vector
-                    // cross them and normalize and that's your normal
                     var t1 = subtract(vertices[i * DEMObj.nrows + (j + 1)], vertices[i * DEMObj.nrows + j]);//top of corner
                     var t2 = subtract(vertices[(i + 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//right of corner
                 } else if ((i == (DEMObj.ncols - 1) && j == 0)) {
@@ -194,10 +183,7 @@ function makeStrip() {
                     var t1 = subtract(vertices[(i - 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//left of corner
                     var t2 = subtract(vertices[i * DEMObj.nrows + (j - 1)], vertices[i * DEMObj.nrows + j]);//bottom of corner
                 }
-                console.log("t1: " + t1);
-                console.log("t2: " + t2);
                 normal = normalize(cross(t1, t2));
-
                 normals.push(normal);
 
                 /**Interior**/
@@ -242,6 +228,7 @@ function makeStrip() {
                 } else if (j == 0) {
                     //Bottom Edge
                     console.log(i);
+                    //when i is 981,    VVVVVV is saying vertices[1362034] but vertices only has 1362034 indices so it is undefined
                     var t10 = subtract(vertices[(i + 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//right of middle
                     var t20 = subtract(vertices[i * DEMObj.nrows + (j + 1)], vertices[i * DEMObj.nrows + j]);//top of middle
                     var t30 = subtract(vertices[(i - 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//left of middle
