@@ -112,10 +112,7 @@ function Grid(gl, program, color, color2) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.nBufferId);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(this.data.normals), gl.STATIC_DRAW);
 
-    //Not sure why this only works down here, and not in the shader program function
-    this.program.vnormLoc = gl.getAttribLocation(program, "vNormal");
-    gl.vertexAttribPointer(this.program.vnormLoc, 3, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(this.program.vnormLoc);
+
 }
 
 /* Method allows an object to render itself */
@@ -125,7 +122,10 @@ Grid.prototype.draw = function (gl) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set pos buffer active
     // map position buffer data to the corresponding vertex shader attribute
     gl.vertexAttribPointer(this.program.vposLoc, 3, gl.FLOAT, false, 0, 0);
-
+    //Why down here does it look like terrain, but still probably not the correct view
+    this.program.vnormLoc = gl.getAttribLocation(program, "vNormal");
+    gl.vertexAttribPointer(this.program.vnormLoc, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(this.program.vnormLoc);
     // send this object's color down to the GPU as a uniform variable
     gl.uniform4fv(this.program.colorLoc, flatten(this.color));
     gl.uniform4fv(this.program.color2Loc, flatten(this.color2));
