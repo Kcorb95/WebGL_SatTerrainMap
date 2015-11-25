@@ -41,8 +41,6 @@ function loadShaderProgram(gl) {
     program.vposLoc = gl.getAttribLocation(program, "vPosition");
     gl.enableVertexAttribArray(program.vposLoc);
 
-    program.vnormLoc = gl.getAttribLocation(program, "vNormal");
-
     // get the address of the uniform variable and save it to our program object
     program.colorLoc = gl.getUniformLocation(program, "color");
     program.color2Loc = gl.getUniformLocation(program, "color2");
@@ -79,7 +77,6 @@ function render(drawables, gl) {
 
     modelViewMatrix = mult(lookAt(eye, at, up), rotate(theta[2], [0, 0, 1]));//rotates the model around the z axis
 
-
     drawables.forEach(function (obj) { // loop over all objects and draw each
         obj.draw(gl);
     });
@@ -89,7 +86,6 @@ function render(drawables, gl) {
 
     gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), flatten(lightPosition));
     gl.uniform4fv(gl.getUniformLocation(program, "lightDiffuse"), flatten(lightDiffuse));
-
 
     // queue up this same callback for the next frame
     requestAnimFrame(renderScene);
@@ -116,9 +112,10 @@ function Grid(gl, program, color, color2) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.nBufferId);
     gl.bufferData(gl.ARRAY_BUFFER, flatten(this.data.normals), gl.STATIC_DRAW);
 
-    program.vnormLoc = gl.getAttribLocation(program, "vNormal");
-    gl.vertexAttribPointer(program.vnormLoc, 3, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(program.vnormLoc);
+    //Not sure why this only works down here, and not in the shader program function
+    this.program.vnormLoc = gl.getAttribLocation(program, "vNormal");
+    gl.vertexAttribPointer(this.program.vnormLoc, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(this.program.vnormLoc);
 }
 
 /* Method allows an object to render itself */
@@ -160,10 +157,10 @@ function makeStrip() {
             vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
         }
     }
+
     var normal, normal1, normal2, normal3, normal4;
     for (var i = 0; i < DEMObj.ncols; i++) {
         for (var j = 0; j < DEMObj.nrows; j++) {
-
             /**Corners**/
             if ((i == 0 && j == 0) || (i == (DEMObj.ncols - 1) && j == 0) || (i == 0 && j == (DEMObj.nrows - 1)) || (i == (DEMObj.ncols - 1) && j == (DEMObj.nrows - 1))) {
                 if ((i == 0 && j == 0)) {
@@ -250,37 +247,37 @@ function makeStrip() {
 
 /* Set up event callback to start the application */
 window.onload = function () {
-
+    //listens for the modifier to change the zoom
     document.getElementById("zoomSlider").oninput = function () {
         zoom = event.srcElement.value / 1;
-    };//listens for the modifier to change the zoom
+    };
+    //Listens for the value we will multiply maximum height by.
     document.getElementById("heightSlider").oninput = function () {
-        cHeight = (DEMObj.hmax * event.srcElement.value) / 1;
-    };//Listens for the value we will multiply maximum height by.
+        cHeight = (DEMObj.hmax * event.srcElement.value);//Used to need to be divided by 1 for proper behavior, doesn't look like it anymore
+    };
 
     //make this a radio button?
     document.getElementById("perspectiveView").onclick = function () {
-        cMode = 0;
-    };//Listens for the value we will multiply maximum height by.
+        cMode = 0;//sets flag for perspective view
+    };
     document.getElementById("parallelView").onclick = function () {
-        cMode = 1;
-    };//Listens for the value we will multiply maximum height by.
+        cMode = 1;//sets flag for parallel view
+    };
 
-    //May make this a slider eventually
+    //May make this a slider eventually (only one slider for in and out)
     document.getElementById("rotateLeft").addEventListener("click", function () {
-        theta[2] -= 5.0;
-    });//rotate left 5 degrees
+        theta[2] -= 5.0;//rotate left 5 degrees
+    });
     document.getElementById("rotateRight").addEventListener("click", function () {
-        theta[2] += 5.0
-    }); //rotate right 5 degrees
+        theta[2] += 5.0;//rotate right 5 degrees
+    });
 };
 /* This is a callback function that sets up the render and then triggers the render function after DEM file is read.*/
 function buildTerrain() {
     // local variable to hold reference to our WebGL context
     var gl = initGL(); // basic WebGL setup for the scene
-    var prog = loadShaderProgram(gl);
-
-    var drawables = []; // used to store a list of objects that need to be drawn
+    var program = loadShaderProgram(gl);
+    var drawables = []; // used to store a list of objects that are to be drawn
 
     // event listener on the button will set the color of each drawable object
     document.getElementById("colorBtn").addEventListener("click", function () {
@@ -306,11 +303,10 @@ function buildTerrain() {
     //sets the current camera height based off of the maximum height value for the current DEM file.
     cHeight = DEMObj.hmax * 2;//this makes it proportional to the grid
 
-    document.getElementById("cellName").innerHTML = "<b><font color=" + "white" + ">" + DEMObj.cellname + "</font></b>";//updates the cellname after dem file is read
-
+    document.getElementById("cellName").innerHTML = "<b><font color=" + "purple" + ">" + DEMObj.cellname + "</font></b>";//updates the cellname after dem file is read
 
     // create a triangle strip object and add it to the list of objects to draw
-    drawables.push(new Grid(gl, prog, vec4(0, 0, 0, 1), vec4(1, 1, 0, 1)));
+    drawables.push(new Grid(gl, program, vec4(0, 0, 0, 1), vec4(1, 1, 0, 1)));//black and yellow default
     console.log("Done building");//debug for when grid is finished building
     render(drawables, gl); // start drawing the scene
 }
