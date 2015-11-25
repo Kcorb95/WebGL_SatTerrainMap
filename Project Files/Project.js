@@ -245,9 +245,6 @@ function makeStrip() {
             indices.push(i + nrows, i + 1);
         }
     }
-    console.log("normals[1]: " + normals[1]);
-    console.log("normals[ncols-2+nrows-2]: " + normals[(DEMObj.ncols - 2) + (DEMObj.nrows - 2)]);
-
     return {vertices: vertices, indices: indices, normals: normals};
 }
 
