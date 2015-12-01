@@ -145,8 +145,8 @@ function makeStrip() {
     var ymin = DEMObj.ymin;
     var xres = DEMObj.xres;
     var yres = DEMObj.yres;
-    var nrows = 1387;
-    var ncols = 47;
+    var nrows = 256;
+    var ncols = 256;
     var vertices = []; // to hold the vertices to be drawn as tri-strips
     var indices = []; // to specify the order in which to draw vertices for a triangle strip
     var normals = [];
