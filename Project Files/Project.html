@@ -10,24 +10,51 @@
     </style>
     <script id="vertex-shader" type="x-shader/x-vertex">
         attribute vec4 vPosition; // vert attribs bound to array buffer data
+        attribute vec3 vNormal;
         uniform vec4 color; // uniform value shared across all vertices
         uniform vec4 color2; // uniform value shared across all vertices
         varying vec4 vColor; // sent down to later stages of the pipeline
+        varying float normZ;
         uniform mat4 projectionMatrix; // uniform matrix for viewing projection
         uniform mat4 modelViewMatrix;
         uniform float hmax;
         uniform float hmin;
-        varying float normZ;
+        uniform vec4 lightPosition;
+        uniform vec4 lightDiffuse;
 
         void main()
         {
-        //Normalize Heights
-        normZ = (vPosition.z - hmin) / (hmax - hmin);
+            vec3 pos = -(modelViewMatrix * vPosition).xyz;
 
-        //mix height with two colors for the blended colors
-        vColor = mix(color, color2, normZ);
-        
-        gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+            //fixed light position
+
+            vec3 light = lightPosition.xyz;
+            vec3 L = normalize( light - pos );
+
+
+            vec3 E = normalize( -pos );
+            vec3 H = normalize( L + E );
+
+            vec4 NN = vec4(vNormal,0);
+
+            // Transform vertex normal into eye coordinates
+
+            vec3 N = normalize( (modelViewMatrix*NN).xyz);
+
+            //Normalize Heights
+            normZ = (vPosition.z - hmin) / (hmax - hmin);
+
+            //mix height with two colors for the blended colors
+            vColor = mix(color, color2, normZ);
+
+            vec4 diffuseProduct = vColor * lightDiffuse;
+
+            float Kd = max( dot(L, N), 0.0 );
+            vec4  diffuse = Kd*diffuseProduct;
+
+            vColor = diffuse;
+
+            gl_Position = projectionMatrix * modelViewMatrix * vPosition;
         }
     </script>
     <script id="fragment-shader" type="x-shader/x-fragment">
@@ -53,7 +80,7 @@
 <body style="background-color:black;text-align:center;">
 <p id="cellName">
     <b>
-        <font color="white">Please choose a terrain file</font>
+        <font color="#8b0000">Please choose a terrain file</font>
     </b>
 </p>
 <br />
