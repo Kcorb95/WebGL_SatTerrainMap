@@ -272,6 +272,18 @@ window.onload = function () {
         theta[2] += 5.0;//rotate right 5 degrees
     });
 };
+/*This object will hold the sliced 256x256 grid objects*/
+function Terrain() {
+    for (var i = 0; i < DEMObj.ncols; i += 256) {
+        for (var j = 0; j < DEMObj.nrows; j += 256) {
+
+        }
+    }
+}
+/*This will handle the drawing of each grid*/
+Terrain.prototype.draw = function (gl) {
+
+};
 /* This is a callback function that sets up the render and then triggers the render function after DEM file is read.*/
 function buildTerrain() {
     // local variable to hold reference to our WebGL context
