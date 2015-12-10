@@ -1,66 +1,47 @@
 <!doctype html>
-<html>
+<html style="height:100%;width:100%;margin:0;padding:0;">
 <head>
-    <title>WebGL Terrain Height Map</title>
-    <meta charset="utf-8" />
+    <title>WebGL Triangle Strip</title>
+    <meta charset="utf-8"/>
     <style type="text/css">
         canvas {
             background: #000;
         }
     </style>
+
     <script id="vertex-shader" type="x-shader/x-vertex">
         attribute vec4 vPosition; // vert attribs bound to array buffer data
         attribute vec3 vNormal;
-        uniform vec4 color; // uniform value shared across all vertices
-        uniform vec4 color2; // uniform value shared across all vertices
-        varying vec4 vColor; // sent down to later stages of the pipeline
-        varying float normZ;
-        uniform mat4 projectionMatrix; // uniform matrix for viewing projection
-        uniform mat4 modelViewMatrix;
-        uniform float hmax;
+        uniform vec3 loColor; // uniform value shared across all vertices
+        uniform vec3 hiColor; // uniform value shared across all vertices
+        uniform mat4 proj; // NEW! uniform matrix for viewing projection
+        uniform mat4 cam; // NEW! uniform matrix for camera frame
+        uniform mat4 objRot; // NEW! uniform matrix for viewing projection
+        uniform vec3 sunDir;
+        uniform vec4 sunColor;
         uniform float hmin;
-        uniform vec4 lightPosition;
-        uniform vec4 lightDiffuse;
+        uniform float hmax;
+        varying vec4 vColor; // sent down to later stages of the pipeline
 
         void main()
         {
-            vec3 pos = -(modelViewMatrix * vPosition).xyz;
+            // blend the app-defined colors based on the "height" coordinate
+            float h = (vPosition.z - hmin) / (hmax - hmin);
+            vColor.rgb = mix(loColor, hiColor, h);
 
-            //fixed light position
+            vec3 n = mat3(cam) * vNormal;
+            vec3 l = mat3(cam) * sunDir;
+            float k = max(0.0, dot(n, l));
+            vColor = k * vColor * sunColor;
+            vColor.a = 1.0;
 
-            vec3 light = lightPosition.xyz;
-            vec3 L = normalize( light - pos );
-
-
-            vec3 E = normalize( -pos );
-            vec3 H = normalize( L + E );
-
-            vec4 NN = vec4(vNormal,0);
-
-            // Transform vertex normal into eye coordinates
-
-            vec3 N = normalize( (modelViewMatrix*NN).xyz);
-
-            //Normalize Heights
-            normZ = (vPosition.z - hmin) / (hmax - hmin);
-
-            //mix height with two colors for the blended colors
-            vColor = mix(color, color2, normZ);
-
-            vec4 diffuseProduct = vColor * lightDiffuse;
-
-            float Kd = max( dot(L, N), 0.0 );
-            vec4  diffuse = Kd*diffuseProduct;
-
-            vColor = diffuse;
-
-            gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+            // some per-object matrix ops now done at app level
+            // but final matrix chain is processed here
+            gl_Position = proj * cam * objRot * vPosition;
         }
     </script>
     <script id="fragment-shader" type="x-shader/x-fragment">
-        #ifdef GL_ES
         precision highp float;
-        #endif
 
         varying vec4 vColor;
 
@@ -70,68 +51,38 @@
             gl_FragColor = vColor;
         }
     </script>
+
     <script type="text/javascript" src="../Common/webgl-utils.js"></script>
     <script type="text/javascript" src="../Common/initShaders.js"></script>
     <script type="text/javascript" src="../Common/MV.js"></script>
+    <script type="text/javascript" src="../lib/ReadSmallDEM.js"></script>
     <script type="text/javascript" src="Project.js"></script>
-    <script type="text/javascript" src="../lib/ReadDEM.js"></script>
-
 </head>
-<body style="background-color:black;text-align:center;">
-<p id="cellName">
-    <b>
-        <font color="#8b0000">Please choose a terrain file</font>
-    </b>
-</p>
-<br />
+<body style="background-color:black;text-align:center;height:100%;width:100%;margin:0;padding:0;">
+<header style="padding:1em;">
+    <input type="file" id="files" name="files" style="position:fixed;left:8px;"/>
 
-<canvas id="gl-canvas" width="800" height="800">
-    Oops ...
+    <h1 id="cellname" style="display:inline-block;width:40em;font-size:16pt;color:#ccc;">
+        <em>Select a file</em>
+    </h1>
+
+    <div style="position:absolute;top:1em;right:16px;">
+        <input id="loColor" type="color" value="#989a24" title="Base Color"/>
+        <input id="hiColor" type="color" value="#f1e900" title="Peak Color"/>
+        <input id="perspOn" type="checkbox" value="false" title="Enable Perspective"/>
+    </div>
+</header>
+<canvas id="gl-canvas" style="height:100%;width:80%;">Oops ...
     your browser doesn't support the HTML5 canvas element
 </canvas>
-<br />
-
-<input type="file" id="files" name="file" accept=".dem" />
-<script>
-    function handleFileSelect() {
-        var files = document.getElementById('files').files;
-        if (!files.length) {
-            alert('Please select a file!');
-            return;
-        }
-        readDemFile(files[0], buildTerrain);
-    }
-    document.getElementById('files').addEventListener('change', handleFileSelect);
-
-</script>
-<br />
-
-<input id="zoomSlider" type="range" min="0.5" max="2" step="0.5" value="1">
-<br />
-
-<input id="heightSlider" type="range" min="1" max="10" step="1" value="2">
-<br />
-
-<button id="rotateLeft">Rotate Left</button>
-<button id="rotateRight">Rotate Right</button>
-<br />
-<br />
-
-<button id="perspectiveView">Switch to perspective view</button>
-<button id="parallelView">Switch to parallel view</button>
-<br />
-<br />
-
-<input id="redIn" type="text" placeholder="How much red(0-1)?" />
-<input id="greenIn" type="text" placeholder="How much green (0-1)?" />
-<input id="blueIn" type="text" placeholder="How much blue (0-1)?" />
-<button id="colorBtn">Set Primary Color</button>
-<br />
-<br />
-
-<input id="redIn2" type="text" placeholder="How much red(0-1)?" />
-<input id="greenIn2" type="text" placeholder="How much green (0-1)?" />
-<input id="blueIn2" type="text" placeholder="How much blue (0-1)?" />
-<button id="colorBtn2">Set Secondary Color</button>
+<div style="z-index:10;">
+    <input id="rotateSlider" type="range" min="-180" max="180" step="2" value="0"
+           style="width:80%;height:16px;position:fixed;left:10%;bottom:32px;" title="Orbit Rotation"/>
+    <br/>
+    <input id="camHgt" type="range" min="0" max="8" step="0.1" value="1" title="View Height"
+           style="position:fixed;left:32px;top:20%;height:20%;width:16px;writing-mode:bt-lr;-webkit-appearance:slider-vertical;"
+           orient="vertical"/>
+</div>
 </body>
 </html>
+

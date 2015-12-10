@@ -1,32 +1,39 @@
-var projectionMatrix; // global variable to hold the projection matrix
-var modelViewMatrix; //global variable that holds the model view matrix
-var program;
+"use strict";
 
-//zoom is a multiplier to be applied to the default zoom level (45 or 55000) that will either increase or decrease the value giving a zoom effect
-var zoom = 1;
-var cHeight;//the camera z value in eye. The height is determined by the hMax value of the DEM file. It is then multiplied by a value to increase or decrease the height.
-//flag for switching camera modes
-var cMode = 0;//0 = persp, 1 = ortho
-var eye, at, up;
-
-var theta = [0, 0, 0];//Can be later changed if needed to rotate on multiple different axis
-
-var lightPosition = vec4(1.0, 1.0, 1.0, 0.0);
-var lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
+var restart = true;
+var orthoProj, perspProj;
+var eye, ref, up = vec3(0, 0, 1);
+var sunDir = vec3(1, 0, 1);
+var sunColor = vec4(1, 1, 0.9, 1);
 
 /* Initialize global WebGL stuff - not object specific */
-function initGL() {
+function initGL(dem) {
     // local variable to hold a reference to an HTML5 canvas
     var canvas = document.getElementById("gl-canvas");
 
     // obtain a WebGL context bound to our canvas
     var gl = WebGLUtils.setupWebGL(canvas);
-    if (!gl)
+    if (!gl) {
         alert("WebGL isn't available");
+    }
 
+    canvas.width = canvas.height = Math.min(
+        parseInt(window.getComputedStyle(canvas, null).getPropertyValue("width")),
+        parseInt(window.getComputedStyle(canvas, null).getPropertyValue("height"))
+    );
     gl.viewport(0, 0, canvas.width, canvas.height); // use the whole canvas
     gl.clearColor(0.0, 0.0, 0.0, 1.0); // background color
-    gl.enable(gl.DEPTH_TEST); // make sure the GPU draw back to front
+    gl.enable(gl.DEPTH_TEST);
+
+    eye = vec3(2 * dem.ymax, 2 * dem.xmax, 2 * dem.hmax);
+    ref = vec3(0, 0, dem.hmin);
+
+    // Set up a simple oblique, orthographic projection matrix
+    var vmin = 1.2 * Math.min(dem.xmin, dem.ymin),
+        vmax = 1.2 * Math.max(dem.xmax, dem.ymax);
+
+    orthoProj = ortho(vmin, vmax, vmin, vmax, -100000, 100000);
+    perspProj = perspective(30, (canvas.width / canvas.height), 1, 1000000);
 
     return gl; // send this back so that other parts of the program can use it
 }
@@ -34,20 +41,30 @@ function initGL() {
 /* Load shaders and initialize attribute pointers. */
 function loadShaderProgram(gl) {
     // use the existing program if given, otherwise use our own defaults
-    program = initShaders(gl, "vertex-shader", "fragment-shader");
+    var program = initShaders(gl, "vertex-shader", "fragment-shader");
 
     // get the position attribute and save it to our program object
     //   then enable the vertex attribute array
     program.vposLoc = gl.getAttribLocation(program, "vPosition");
     gl.enableVertexAttribArray(program.vposLoc);
 
-    // get the address of the uniform variable and save it to our program object
-    program.colorLoc = gl.getUniformLocation(program, "color");
-    program.color2Loc = gl.getUniformLocation(program, "color2");
+    // get address of the vertex normal attribute
+    program.nposLoc = gl.getAttribLocation(program, "vNormal");
+    gl.enableVertexAttribArray(program.nposLoc);
 
-    // get the address of the uniform variables and save it to our program object
-    program.projLoc = gl.getUniformLocation(program, "projectionMatrix");
-    program.modVLoc = gl.getUniformLocation(program, "modelViewMatrix");
+    // get the address of the uniform variable and save it to our program object
+    program.projLoc = gl.getUniformLocation(program, "proj");
+    program.camLoc = gl.getUniformLocation(program, "cam");
+
+    // get the address of the uniform variable and save it to our program object
+    program.loColorLoc = gl.getUniformLocation(program, "loColor");
+    program.hiColorLoc = gl.getUniformLocation(program, "hiColor");
+
+    program.sunDirLoc = gl.getUniformLocation(program, "sunDir");
+    program.sunColLoc = gl.getUniformLocation(program, "sunColor");
+
+    // get the address of the uniform variable and save it to our program object
+    program.objRotLoc = gl.getUniformLocation(program, "objRot");
 
     program.hminLoc = gl.getUniformLocation(program, "hmin");
     program.hmaxLoc = gl.getUniformLocation(program, "hmax");
@@ -57,268 +74,196 @@ function loadShaderProgram(gl) {
 
 /* Global render callback to draw all objects */
 function render(drawables, gl) {
+    restart = false;
+
     // inner-scoped function for closure trickery
     function renderScene() {
-        render(drawables, gl);
+        if (restart) {
+            return;
+        }
+
+        // queue up this same callback for the next frame
+        requestAnimFrame(renderScene);
+
+        // start from a clean frame buffer for this frame
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        drawables.forEach(function (obj) { // loop over all objects and draw each
+            obj.draw(gl);
+        });
     }
 
-    // start from a clean frame buffer for this frame
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-    eye = vec3(60000, 90000, cHeight);//camera's location just outside grid boundaries.
-    at = vec3(0.0, 0.0, 0.0);//where camera focuses on (center of grid)
-    up = vec3(0.0, 0.0, 1.0);//which direction is up (in this case Z)
-
-    /* if cMode is 0 we want perspective view. If not we have a 1, and want orthographic view.*/
-    if (cMode == 0)
-        projectionMatrix = perspective(45.0 * zoom, (gl.canvas.width / gl.canvas.height), 1, 500000);
-    else
-        projectionMatrix = ortho(-55000 * zoom, 55000 * zoom, -55000 * zoom, 55000 * zoom, 1, 500000);
-
-    modelViewMatrix = mult(lookAt(eye, at, up), rotate(theta[2], [0, 0, 1]));//rotates the model around the z axis
-
-    drawables.forEach(function (obj) { // loop over all objects and draw each
-        obj.draw(gl);
-    });
-
-    gl.uniformMatrix4fv(gl.getUniformLocation(program, "modelViewMatrix"), false, flatten(modelViewMatrix));
-    gl.uniformMatrix4fv(program.projLoc, false, flatten(projectionMatrix));
-
-    gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), flatten(lightPosition));
-    gl.uniform4fv(gl.getUniformLocation(program, "lightDiffuse"), flatten(lightDiffuse));
-
-    // queue up this same callback for the next frame
-    requestAnimFrame(renderScene);
+    renderScene();
 }
 
-/* Constructor for a triangle strip object (initializes the data). */
-function Grid(gl, program, color, color2) {
-    this.program = program;//Saves shader program for use in method
-    this.color = color; //The primary color of the grid surface
-    this.color2 = color2;//The secondary color of the grid surface
-    this.data = makeStrip();//Array to hold vertex positions
+/* Constructor for a grid object (initializes the data). */
+function Grid(gl, program, dem, img) {
+    this.gl = gl;
+    this.program = program; // save my shader program
+    this.dem = dem;
+    this.data = mkstrip(dem); // this array will hold raw vertex positions
 
     this.vBufferId = gl.createBuffer(); // reserve a buffer object and store a reference to it
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set active array buffer
-    // pass data to the graphics hardware (convert JS Array to a typed array)
     gl.bufferData(gl.ARRAY_BUFFER, flatten(this.data.vertices), gl.STATIC_DRAW);
+
+    this.nBufferId = gl.createBuffer(); // reserve a buffer object and store a reference to it
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.nBufferId); // set active buffer
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(this.data.normals), gl.STATIC_DRAW);
 
     this.eBufferId = gl.createBuffer(); // reserve a buffer object and store a reference to it
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.eBufferId); // set active array buffer
-    // pass data to the graphics hardware (convert JS Array to a typed array)
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.data.indices), gl.STATIC_DRAW);
-
-    this.nBufferId = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.nBufferId);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(this.data.normals), gl.STATIC_DRAW);
-
-
 }
 
 /* Method allows an object to render itself */
 Grid.prototype.draw = function (gl) {
     gl.useProgram(this.program); // set the current shader programs
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set pos buffer active
-    // map position buffer data to the corresponding vertex shader attribute
-    gl.vertexAttribPointer(this.program.vposLoc, 3, gl.FLOAT, false, 0, 0);
-    //Why down here does it look like terrain, but still probably not the correct view
-    this.program.vnormLoc = gl.getAttribLocation(program, "vNormal");
-    gl.vertexAttribPointer(this.program.vnormLoc, 3, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(this.program.vnormLoc);
+    eye[2] = this.dem.hmax * Math.pow(document.querySelector("#camHgt").value, 2);
+    var modelview = lookAt(eye, ref, up);
+    gl.uniformMatrix4fv(this.program.camLoc, gl.FALSE, flatten(modelview));
+
+    gl.uniform1f(this.program.hminLoc, this.dem.hmin);
+    gl.uniform1f(this.program.hmaxLoc, this.dem.hmax);
+
     // send this object's color down to the GPU as a uniform variable
-    gl.uniform4fv(this.program.colorLoc, flatten(this.color));
-    gl.uniform4fv(this.program.color2Loc, flatten(this.color2));
-    //sends the hmin and hmax values to the vertex shader as a float for normalizing heights and setting blending.
-    gl.uniform1f(program.hminLoc, DEMObj.hmin);
-    gl.uniform1f(program.hmaxLoc, DEMObj.hmax);
+    gl.uniform3fv(this.program.sunDirLoc, flatten(normalize(sunDir)));
+    gl.uniform4fv(this.program.sunColLoc, flatten(sunColor));
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set pos buffer active
+    gl.vertexAttribPointer(this.program.vposLoc, 3, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.nBufferId); // set pos buffer active
+    gl.vertexAttribPointer(this.program.nposLoc, 3, gl.FLOAT, false, 0, 0);
 
     // render the primitives!
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.eBufferId); // set pos buffer active
     gl.drawElements(gl.TRIANGLE_STRIP, this.data.indices.length, gl.UNSIGNED_SHORT, 0);
 };
 
-/* Build a triangle strip with random heights. */
-function makeStrip() {
-    //Setting variables for x/y min/res so we dont have to call it over and over in every loop
-    var xmin = DEMObj.xmin;
-    var ymin = DEMObj.ymin;
-    var xres = DEMObj.xres;
-    var yres = DEMObj.yres;
-    var nrows = 256;
-    var ncols = 256;
-    var vertices = []; // to hold the vertices to be drawn as tri-strips
+/* Build a grid with random heights using triangle strips. */
+function mkstrip(dem) {
+    var i, j, h;
+    var NCOLS = dem.points.length, NROWS = dem.points[0].length;
+    var vertices = dem.points; // to hold the individual coordinate triples
     var indices = []; // to specify the order in which to draw vertices for a triangle strip
     var normals = [];
 
-    // generate a thin grid using the number of rows and columns from dat file with random heights
-    for (var i = 0; i < DEMObj.ncols; i++) {
-        for (var j = 0; j < DEMObj.nrows; j++) {
-            vertices.push(vec3(xmin + i * xres, ymin + j * yres, DEMObj.heights[i][j])); // scale grid so that the x and y coordinates vary between xmin and xmax, ymin and ymax
+    for (i = 0; i < (NCOLS - 1) * NROWS; i++) {
+        indices.push(i, i + NROWS);
+        if (i % NROWS == (NROWS - 1)) {
+            indices.push(i + NROWS, i + 1);
         }
     }
 
-    var normal, normal1, normal2, normal3, normal4;
-    for (var i = 0; i < DEMObj.ncols; i++) {
-        for (var j = 0; j < DEMObj.nrows; j++) {
-            /**Corners**/
-            if ((i == 0 && j == 0) || (i == (DEMObj.ncols - 1) && j == 0) || (i == 0 && j == (DEMObj.nrows - 1)) || (i == (DEMObj.ncols - 1) && j == (DEMObj.nrows - 1))) {
-                if ((i == 0 && j == 0)) {
-                    //bottom left corner 0,0
-                    var t1 = subtract(vertices[i * DEMObj.nrows + (j + 1)], vertices[i * DEMObj.nrows + j]);//top of corner
-                    var t2 = subtract(vertices[(i + 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//right of corner
-                } else if ((i == (DEMObj.ncols - 1) && j == 0)) {
-                    //bottom right corner ncol,0
-                    var t1 = subtract(vertices[(i - 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//left of corner
-                    var t2 = subtract(vertices[i * DEMObj.nrows + (j + 1)], vertices[i * DEMObj.nrows + j]);//top of corner
-                } else if ((i == 0 && j == (DEMObj.nrows - 1))) {
-                    //top left corner 0,nrow
-                    var t1 = subtract(vertices[i * DEMObj.nrows + (j - 1)], vertices[i * DEMObj.nrows + j]);//bottom of corner
-                    var t2 = subtract(vertices[(i + 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//right of corner
-                } else if ((i == (DEMObj.ncols - 1) && j == (DEMObj.nrows - 1))) {
-                    //ncols,nrow corner top right
-                    var t1 = subtract(vertices[(i - 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//left of corner
-                    var t2 = subtract(vertices[i * DEMObj.nrows + (j - 1)], vertices[i * DEMObj.nrows + j]);//bottom of corner
+    // compute surface normal vectors for each point in the grid
+    var a, b, n;
+    for (i = 0; i < NCOLS; i++) {
+        for (j = 0; j < NROWS; j++) {
+            n = vec3(0, 0, 0);
+            if (i > 0) {
+                a = subtract(vertices[i - 1][j], vertices[i][j]);
+                if (j > 0) {
+                    b = subtract(vertices[i][j - 1], vertices[i][j]);
+                    n = add(n, cross(a, b));
                 }
-                normal = normalize(cross(t1, t2));
-                normals.push(normal);
-
-                /**Interior**/
-            } else if ((i > 0 && i < DEMObj.ncols - 1) && (j > 0 && j < DEMObj.nrows - 1)) {
-                //interior vertex
-                var t1 = subtract(vertices[i * DEMObj.nrows + (j + 1)], vertices[i * DEMObj.nrows + j]);//top of middle
-                var t2 = subtract(vertices[(i - 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//left of middle
-                var t3 = subtract(vertices[i * DEMObj.nrows + (j - 1)], vertices[i * DEMObj.nrows + j]);//bottom of middle
-                var t4 = subtract(vertices[(i + 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//right of middle
-                normal1 = cross(t1, t2);//top to left
-                normal2 = cross(t2, t3);//left to bottom
-                normal3 = cross(t3, t4);//bottom to right
-                normal4 = cross(t4, t1);//right to top
-                normal = normalize(add(add(normal1, normal2), add(normal3, normal4)));
-                normals.push(normal);
-
-                /**L/R Edge**/
-            } else if (i == 0 || i == DEMObj.ncols - 1) {
-                if (i == 0) {
-                    //Left Edge
-                    var t1 = subtract(vertices[i * DEMObj.nrows + (j - 1)], vertices[i * DEMObj.nrows + j]);//bottom of middle
-                    var t2 = subtract(vertices[(i + 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//right of middle
-                    var t3 = subtract(vertices[i * DEMObj.nrows + (j + 1)], vertices[i * DEMObj.nrows + j]);//top of middle
-                } else if (i == DEMObj.ncols - 1) {
-                    //Right Edge
-                    var t1 = subtract(vertices[i * DEMObj.nrows + (j + 1)], vertices[i * DEMObj.nrows + j]);//top of middle
-                    var t2 = subtract(vertices[(i - 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//left of middle
-                    var t3 = subtract(vertices[i * DEMObj.nrows + (j - 1)], vertices[i * DEMObj.nrows + j]);//bottom of middle
+                if (j < NROWS - 1) {
+                    //b = subtract(vertices[i][j+1], vertices[i][j]);
+                    b = subtract(vertices[i - 1][j + 1], vertices[i][j]);
+                    n = add(n, cross(b, a));
                 }
-                normal1 = cross(t1, t2);
-                normal2 = cross(t2, t3);
-                normal = normalize(add(normal1, normal2));
-                normals.push(normal);
-
-                /**T/B Edge**/
-            } else if (j == DEMObj.nrows - 1 || j == 0) {
-                if (j == DEMObj.nrows - 1) {
-                    //Top Edge
-                    var t1 = subtract(vertices[(i - 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//left of middle
-                    var t2 = subtract(vertices[i * DEMObj.nrows + (j - 1)], vertices[i * DEMObj.nrows + j]);//bottom of middle
-                    var t3 = subtract(vertices[(i + 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//right of middle
-                } else if (j == 0) {
-                    //Bottom Edge
-                    var t1 = subtract(vertices[(i + 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//right of middle
-                    var t2 = subtract(vertices[i * DEMObj.nrows + (j + 1)], vertices[i * DEMObj.nrows + j]);//top of middle
-                    var t3 = subtract(vertices[(i - 1) * DEMObj.nrows + j], vertices[i * DEMObj.nrows + j]);//left of middle
-                }
-                normal1 = cross(t1, t2);
-                normal2 = cross(t2, t3);
-                normal = normalize(add(normal1, normal2));
-                normals.push(normal);
             }
-        }
-    }
-
-    for (var i = 0; i < (ncols - 1) * nrows; i++) {
-        indices.push(i, i + nrows);
-        if (i % nrows == (nrows - 1)) {
-            indices.push(i + nrows, i + 1);
+            if (i < NCOLS - 1) {
+                a = subtract(vertices[i + 1][j], vertices[i][j]);
+                if (j > 0) {
+                    //b = subtract(vertices[i][j-1], vertices[i][j]);
+                    b = subtract(vertices[i + 1][j - 1], vertices[i][j]);
+                    n = add(n, cross(b, a));
+                }
+                if (j < NROWS - 1) {
+                    b = subtract(vertices[i][j + 1], vertices[i][j]);
+                    n = add(n, cross(a, b));
+                }
+            }
+            normals.push(normalize(n));
         }
     }
     return {vertices: vertices, indices: indices, normals: normals};
 }
 
-/* Set up event callback to start the application */
-window.onload = function () {
-    //listens for the modifier to change the zoom
-    document.getElementById("zoomSlider").oninput = function () {
-        zoom = event.srcElement.value / 1;
-    };
-    //Listens for the value we will multiply maximum height by.
-    document.getElementById("heightSlider").oninput = function () {
-        cHeight = (DEMObj.hmax * event.srcElement.value);//Used to need to be divided by 1 for proper behavior, doesn't look like it anymore
-    };
+function initListeners(gl, prog) {
+    gl.useProgram(prog); // set the current shader programs
 
-    //make this a radio button?
-    document.getElementById("perspectiveView").onclick = function () {
-        cMode = 0;//sets flag for perspective view
-    };
-    document.getElementById("parallelView").onclick = function () {
-        cMode = 1;//sets flag for parallel view
-    };
-
-    //May make this a slider eventually (only one slider for in and out)
-    document.getElementById("rotateLeft").addEventListener("click", function () {
-        theta[2] -= 5.0;//rotate left 5 degrees
+    var projToggle = document.querySelector("#perspOn");
+    projToggle.addEventListener("change", function () {
+        var projection = this.checked ? perspProj : orthoProj;
+        gl.useProgram(prog); // set the current shader programs
+        gl.uniformMatrix4fv(prog.projLoc, gl.FALSE, flatten(projection));
     });
-    document.getElementById("rotateRight").addEventListener("click", function () {
-        theta[2] += 5.0;//rotate right 5 degrees
-    });
-};
-/*This object will hold the sliced 256x256 grid objects*/
-function Terrain() {
-    for (var i = 0; i < DEMObj.ncols; i += 256) {
-        for (var j = 0; j < DEMObj.nrows; j += 256) {
+    gl.uniformMatrix4fv(prog.projLoc, gl.FALSE, flatten(orthoProj));
 
-        }
-    }
+    var rotSlider = document.querySelector("#rotateSlider");
+    rotSlider.addEventListener("input", function () {
+        var angle = this.value;
+        gl.useProgram(prog); // set the current shader programs
+        gl.uniformMatrix4fv(prog.objRotLoc, gl.FALSE,
+            flatten(rotate(angle, vec3(0, 0, 1))));
+    });
+    gl.uniformMatrix4fv(prog.objRotLoc, gl.FALSE,
+        flatten(rotate(rotSlider.value, vec3(0, 0, 1))));
+
+    var loColorChooser = document.querySelector("#loColor");
+    loColorChooser.addEventListener("change", function () {
+        gl.useProgram(prog); // set the current shader programs
+        gl.uniform3fv(prog.loColorLoc, hexToRgb(this.value));
+    });
+    gl.uniform3fv(prog.loColorLoc, hexToRgb(loColorChooser.value));
+
+    var hiColorChooser = document.querySelector("#hiColor");
+    hiColorChooser.addEventListener("change", function () {
+        gl.useProgram(prog); // set the current shader programs
+        gl.uniform3fv(prog.hiColorLoc, hexToRgb(this.value));
+    });
+    gl.uniform3fv(prog.hiColorLoc, hexToRgb(hiColorChooser.value));
 }
-/*This will handle the drawing of each grid*/
-Terrain.prototype.draw = function (gl) {
 
-};
-/* This is a callback function that sets up the render and then triggers the render function after DEM file is read.*/
-function buildTerrain() {
+function initScene(dem) {
+    var gl = initGL(dem); // basic WebGL setup for the scene
     // local variable to hold reference to our WebGL context
-    var gl = initGL(); // basic WebGL setup for the scene
-    var program = loadShaderProgram(gl);
-    var drawables = []; // used to store a list of objects that are to be drawn
+    var prog = loadShaderProgram(gl);
 
-    // event listener on the button will set the color of each drawable object
-    document.getElementById("colorBtn").addEventListener("click", function () {
-        var color = vec4(document.getElementById("redIn").value,
-            document.getElementById("greenIn").value,
-            document.getElementById("blueIn").value,
-            1.0);
-        drawables.forEach(function (obj) {
-            obj.color = color;
-        });
-    });
+    initListeners(gl, prog);
 
-    document.getElementById("colorBtn2").addEventListener("click", function () {
-        var color2 = vec4(document.getElementById("redIn2").value,
-            document.getElementById("greenIn2").value,
-            document.getElementById("blueIn2").value,
-            1.0);
-        drawables.forEach(function (obj) {
-            obj.color2 = color2;
-        });
-    });
+    document.querySelector("#cellname").innerHTML = dem.cellname;
 
-    //sets the current camera height based off of the maximum height value for the current DEM file.
-    cHeight = DEMObj.hmax * 2;//this makes it proportional to the grid
+    var drawables = []; // used to store a list of objects that need to be drawn
 
-    document.getElementById("cellName").innerHTML = "<b><font color=" + "purple" + ">" + DEMObj.cellname + "</font></b>";//updates the cellname after dem file is read
-
-    // create a triangle strip object and add it to the list of objects to draw
-    drawables.push(new Grid(gl, program, vec4(0, 0, 0, 1), vec4(1, 1, 0, 1)));//black and yellow default
+    // create a grid object and add it to the list
+    drawables.push(new Grid(gl, prog, dem, this));
     console.log("Done building");//debug for when grid is finished building
     render(drawables, gl); // start drawing the scene
 }
+
+function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? [
+        parseInt(result[1], 16) / 255,
+        parseInt(result[2], 16) / 255,
+        parseInt(result[3], 16) / 255
+    ] : null;
+}
+
+/* Set up event callback to start the application */
+window.onload = function () {
+    document.querySelector("#files").addEventListener("change", function () {
+        var files = document.querySelector("#files").files;
+        if (files.length) {
+            restart = true;
+            readDemFile(files[0], initScene);
+        } else {
+            alert("Please select a file!");
+        }
+    });
+};
+

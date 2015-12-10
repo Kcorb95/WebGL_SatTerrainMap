@@ -4,6 +4,6 @@
     <exclude-output />
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Graphics Libraries" level="application" />
+    <orderEntry type="library" name="MV" level="application" />
   </component>
 </module>
