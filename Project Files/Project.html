@@ -69,10 +69,11 @@
     <div style="position:absolute;top:1em;right:16px;">
         <input id="loColor" type="color" value="#989a24" title="Base Color"/>
         <input id="hiColor" type="color" value="#f1e900" title="Peak Color"/>
-        <input id="perspOn" type="checkbox" value="false" title="Enable Perspective"/>
+        <input id="persp_On" type="checkbox" value="false" title="Enable Perspective"/>
     </div>
 </header>
-<canvas id="gl-canvas" style="height:100%;width:80%;">Oops ...
+<canvas id="gl-canvas" style="height:100%;width:80%;">
+    Oops ...
     your browser doesn't support the HTML5 canvas element
 </canvas>
 <div style="z-index:10;">
@@ -82,6 +83,11 @@
     <input id="camHgt" type="range" min="0" max="8" step="0.1" value="1" title="View Height"
            style="position:fixed;left:32px;top:20%;height:20%;width:16px;writing-mode:bt-lr;-webkit-appearance:slider-vertical;"
            orient="vertical"/>
+    <br/>
+    <input id="zoomSlider" type="range" min="0.5" max="2" step="0.5" value="1" title="Zoom"
+           style="position:fixed;right:32px;top:20%;height:20%;width:16px;writing-mode:bt-lr;-webkit-appearance:slider-vertical;"
+           orient="vertical"/>
+
 </div>
 </body>
 </html>

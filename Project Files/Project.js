@@ -1,10 +1,9 @@
-"use strict";
-
 var restart = true;
 var orthoProj, perspProj;
 var eye, ref, up = vec3(0, 0, 1);
 var sunDir = vec3(1, 0, 1);
 var sunColor = vec4(1, 1, 0.9, 1);
+var zoom = 1;
 
 /* Initialize global WebGL stuff - not object specific */
 function initGL(dem) {
@@ -13,9 +12,8 @@ function initGL(dem) {
 
     // obtain a WebGL context bound to our canvas
     var gl = WebGLUtils.setupWebGL(canvas);
-    if (!gl) {
+    if (!gl)
         alert("WebGL isn't available");
-    }
 
     canvas.width = canvas.height = Math.min(
         parseInt(window.getComputedStyle(canvas, null).getPropertyValue("width")),
@@ -32,8 +30,8 @@ function initGL(dem) {
     var vmin = 1.2 * Math.min(dem.xmin, dem.ymin),
         vmax = 1.2 * Math.max(dem.xmax, dem.ymax);
 
-    orthoProj = ortho(vmin, vmax, vmin, vmax, -100000, 100000);
-    perspProj = perspective(30, (canvas.width / canvas.height), 1, 1000000);
+    orthoProj = ortho(vmin * zoom, vmax * zoom, vmin * zoom, vmax * zoom, -100000, 100000);
+    perspProj = perspective(30 * zoom, (canvas.width / canvas.height), 1, 1000000);
 
     return gl; // send this back so that other parts of the program can use it
 }
@@ -65,6 +63,9 @@ function loadShaderProgram(gl) {
 
     // get the address of the uniform variable and save it to our program object
     program.objRotLoc = gl.getUniformLocation(program, "objRot");
+
+    // get the address of the uniform variable and save it to our program object
+    program.objZoomLoc = gl.getUniformLocation(program, "objZoom");
 
     program.hminLoc = gl.getUniformLocation(program, "hmin");
     program.hmaxLoc = gl.getUniformLocation(program, "hmax");
@@ -195,7 +196,7 @@ function mkstrip(dem) {
 function initListeners(gl, prog) {
     gl.useProgram(prog); // set the current shader programs
 
-    var projToggle = document.querySelector("#perspOn");
+    var projToggle = document.querySelector("#persp_On");
     projToggle.addEventListener("change", function () {
         var projection = this.checked ? perspProj : orthoProj;
         gl.useProgram(prog); // set the current shader programs
@@ -212,6 +213,16 @@ function initListeners(gl, prog) {
     });
     gl.uniformMatrix4fv(prog.objRotLoc, gl.FALSE,
         flatten(rotate(rotSlider.value, vec3(0, 0, 1))));
+
+    var zoomSlider = document.querySelector("#zoomSlider");
+    zoomSlider.addEventListener("input", function () {
+        var zoom = this.value;
+        gl.useProgram(prog); // set the current shader programs
+        gl.uniformMatrix4fv(prog.objZoomLoc, gl.FALSE,
+            flatten(zoom(zoom)));//no zoom method, wat do
+    });
+    gl.uniformMatrix4fv(prog.objZoomLoc, gl.FALSE,
+        flatten(zoom(zoom.value)));
 
     var loColorChooser = document.querySelector("#loColor");
     loColorChooser.addEventListener("change", function () {
