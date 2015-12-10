@@ -67,6 +67,8 @@ function loadShaderProgram(gl) {
     // get the address of the uniform variable and save it to our program object
     program.objZoomLoc = gl.getUniformLocation(program, "objZoom");
 
+    program.hminLoc = gl.getUniformLocation(program, "zoom");
+
     program.hminLoc = gl.getUniformLocation(program, "hmin");
     program.hmaxLoc = gl.getUniformLocation(program, "hmax");
 
@@ -208,21 +210,18 @@ function initListeners(gl, prog) {
     rotSlider.addEventListener("input", function () {
         var angle = this.value;
         gl.useProgram(prog); // set the current shader programs
-        gl.uniformMatrix4fv(prog.objRotLoc, gl.FALSE,
-            flatten(rotate(angle, vec3(0, 0, 1))));
+        gl.uniformMatrix4fv(prog.objRotLoc, gl.FALSE, flatten(rotate(angle, vec3(0, 0, 1))));
     });
-    gl.uniformMatrix4fv(prog.objRotLoc, gl.FALSE,
-        flatten(rotate(rotSlider.value, vec3(0, 0, 1))));
+    gl.uniformMatrix4fv(prog.objRotLoc, gl.FALSE, flatten(rotate(rotSlider.value, vec3(0, 0, 1))));
 
-    var zoomSlider = document.querySelector("#zoomSlider");
-    zoomSlider.addEventListener("input", function () {
+    var zoomSlider = document.querySelector("#rotateSlider");
+    rotSlider.addEventListener("input", function () {
         var zoom = this.value;
         gl.useProgram(prog); // set the current shader programs
-        gl.uniformMatrix4fv(prog.objZoomLoc, gl.FALSE,
-            flatten(zoom(zoom)));//no zoom method, wat do
+        gl.uniform1f(prog.objZoomLoc, zoom);
     });
-    gl.uniformMatrix4fv(prog.objZoomLoc, gl.FALSE,
-        flatten(zoom(zoom.value)));
+    gl.uniform1f(prog.objZoomLoc, zoom);
+
 
     var loColorChooser = document.querySelector("#loColor");
     loColorChooser.addEventListener("change", function () {
