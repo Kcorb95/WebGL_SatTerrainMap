@@ -58,16 +58,19 @@ function loadShaderProgram(gl) {
     program.loColorLoc = gl.getUniformLocation(program, "loColor");
     program.hiColorLoc = gl.getUniformLocation(program, "hiColor");
 
+    // get address of the texture coordinate attribute
+    program.tcoordLoc = gl.getAttribLocation(program, "vTexCoord");
+
+    // get the address of the texture domain uniform variable
+    program.texLoc = gl.getUniformLocation(program, "texture");
+
     program.sunDirLoc = gl.getUniformLocation(program, "sunDir");
     program.sunColLoc = gl.getUniformLocation(program, "sunColor");
 
     // get the address of the uniform variable and save it to our program object
     program.objRotLoc = gl.getUniformLocation(program, "objRot");
 
-    // get the address of the uniform variable and save it to our program object
-    program.objZoomLoc = gl.getUniformLocation(program, "objZoom");
-
-    program.hminLoc = gl.getUniformLocation(program, "zoom");
+    program.zoomLoc = gl.getUniformLocation(program, "zoom");
 
     program.hminLoc = gl.getUniformLocation(program, "hmin");
     program.hmaxLoc = gl.getUniformLocation(program, "hmax");
@@ -100,11 +103,25 @@ function render(drawables, gl) {
 }
 
 /* Constructor for a grid object (initializes the data). */
-function Grid(gl, program, dem, img) {
-    this.gl = gl;
+function Grid(gl, program, dem) {
     this.program = program; // save my shader program
     this.dem = dem;
     this.data = mkstrip(dem); // this array will hold raw vertex positions
+
+    //this.texImage = document.getElementById("texture");
+    this.texId = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.texId);
+    this.texImage = new Image();
+    this.texImage.onload = function () {
+        console.log("Image loaded:", this.src);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); // needed to flip image vertically
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this);
+        gl.generateMipmap(gl.TEXTURE_2D);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        console.log("Texture configured.");
+    };
+    this.texImage.src = "grass.png";
 
     this.vBufferId = gl.createBuffer(); // reserve a buffer object and store a reference to it
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set active array buffer
@@ -117,6 +134,10 @@ function Grid(gl, program, dem, img) {
     this.eBufferId = gl.createBuffer(); // reserve a buffer object and store a reference to it
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.eBufferId); // set active array buffer
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.data.indices), gl.STATIC_DRAW);
+
+    this.tBufferId = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.tBufferId); // set active array buffer
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(this.data.texcoords), gl.STATIC_DRAW);
 }
 
 /* Method allows an object to render itself */
@@ -140,6 +161,14 @@ Grid.prototype.draw = function (gl) {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.nBufferId); // set pos buffer active
     gl.vertexAttribPointer(this.program.nposLoc, 3, gl.FLOAT, false, 0, 0);
 
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.tBufferId); // set pos buffer active
+    // map position buffer data to the corresponding vertex shader attribute
+    gl.vertexAttribPointer(this.program.tcoordLoc, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(this.program.tcoordLoc);
+
+    // send texture image data
+    gl.uniform1i(this.program.texLoc, 0);
+
     // render the primitives!
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.eBufferId); // set pos buffer active
     gl.drawElements(gl.TRIANGLE_STRIP, this.data.indices.length, gl.UNSIGNED_SHORT, 0);
@@ -152,6 +181,13 @@ function mkstrip(dem) {
     var vertices = dem.points; // to hold the individual coordinate triples
     var indices = []; // to specify the order in which to draw vertices for a triangle strip
     var normals = [];
+    var texcoords = [];
+
+    for (i = 0; i < NCOLS; i++) {
+        for (j = 0; j < NROWS; j++) {
+            texcoords.push(vec2(i / (NCOLS - 1), j / (NROWS - 1)));
+        }
+    }
 
     for (i = 0; i < (NCOLS - 1) * NROWS; i++) {
         indices.push(i, i + NROWS);
@@ -192,7 +228,7 @@ function mkstrip(dem) {
             normals.push(normalize(n));
         }
     }
-    return {vertices: vertices, indices: indices, normals: normals};
+    return {vertices: vertices, indices: indices, normals: normals, texcoords: texcoords};
 }
 
 function initListeners(gl, prog) {
@@ -214,13 +250,13 @@ function initListeners(gl, prog) {
     });
     gl.uniformMatrix4fv(prog.objRotLoc, gl.FALSE, flatten(rotate(rotSlider.value, vec3(0, 0, 1))));
 
-    var zoomSlider = document.querySelector("#rotateSlider");
-    rotSlider.addEventListener("input", function () {
+    var zoomSlider = document.querySelector("#zoomSlider");
+    zoomSlider.addEventListener("input", function () {
         var zoom = this.value;
         gl.useProgram(prog); // set the current shader programs
-        gl.uniform1f(prog.objZoomLoc, zoom);
+        gl.uniform1f(prog.zoomLoc, zoom);
     });
-    gl.uniform1f(prog.objZoomLoc, zoom);
+    gl.uniform1f(prog.zoomLoc, zoom);
 
 
     var loColorChooser = document.querySelector("#loColor");

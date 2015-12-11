@@ -12,6 +12,7 @@
     <script id="vertex-shader" type="x-shader/x-vertex">
         attribute vec4 vPosition; // vert attribs bound to array buffer data
         attribute vec3 vNormal;
+        attribute vec2 vTexCoord;
         uniform vec3 loColor; // uniform value shared across all vertices
         uniform vec3 hiColor; // uniform value shared across all vertices
         uniform mat4 proj; // NEW! uniform matrix for viewing projection
@@ -19,10 +20,11 @@
         uniform mat4 objRot; // NEW! uniform matrix for viewing projection
         uniform vec3 sunDir;
         uniform vec4 sunColor;
-        uniform float objZoom;
+        uniform float zoom;
         uniform float hmin;
         uniform float hmax;
         varying vec4 vColor; // sent down to later stages of the pipeline
+        varying vec2 fTexCoord;
 
         void main()
         {
@@ -36,21 +38,25 @@
             vColor = k * vColor * sunColor;
             vColor.a = 1.0;
 
+            fTexCoord = vTexCoord;
+
             // some per-object matrix ops now done at app level
             // but final matrix chain is processed here
             gl_Position = proj * cam * objRot * vPosition;
-            //gl_Position = proj * cam * objRot * (vPosition * (1.0 / objZoom));
+            //gl_Position = proj * cam * objRot * (vPosition * (1.0 / zoom));
         }
     </script>
     <script id="fragment-shader" type="x-shader/x-fragment">
         precision highp float;
 
         varying vec4 vColor;
+        varying vec2 fTexCoord;
+        uniform sampler2D texMap;
 
         void
         main()
         {
-            gl_FragColor = vColor;
+            gl_FragColor = vColor * texture2D( texMap, fTexCoord );
         }
     </script>
 
@@ -61,6 +67,7 @@
     <script type="text/javascript" src="Project.js"></script>
 </head>
 <body style="background-color:black;text-align:center;height:100%;width:100%;margin:0;padding:0;">
+<!--<img id="texture" src="../grass.png" alt="Grass Texture" hidden="hidden"/>-->
 <header style="padding:1em;">
     <input type="file" id="files" name="files" style="position:fixed;left:8px;"/>
 
