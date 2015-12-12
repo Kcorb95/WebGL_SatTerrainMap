@@ -239,11 +239,10 @@ function mkstrip(dem) {
 
 function initListeners(gl, prog) {
     gl.useProgram(prog); // set the current shader programs
-    var projection = perspProj;
 
     var projToggle = document.querySelector("#persp_On");
     projToggle.addEventListener("change", function () {
-        projection = this.checked ? perspProj : orthoProj;
+        var projection = this.checked ? perspProj : orthoProj;
         gl.useProgram(prog); // set the current shader programs
         gl.uniformMatrix4fv(prog.projLoc, gl.FALSE, flatten(projection));
     });
@@ -259,12 +258,10 @@ function initListeners(gl, prog) {
 
     var zoomSlider = document.querySelector("#zoomSlider");
     zoomSlider.addEventListener("input", function () {
-        initCamera(this.value);
-        //this is a bad way to make zoom work
-        gl.useProgram(prog); // set the current shader programs
-        gl.uniformMatrix4fv(prog.projLoc, gl.FALSE, flatten(projection));
+        initCamera(this.value / 1);
+        gl.uniformMatrix4fv(prog.projLoc, gl.FALSE, flatten(orthoProj));
     });
-    gl.uniformMatrix4fv(prog.projLoc, gl.FALSE, flatten(orthoProj));
+
 
     var loColorChooser = document.querySelector("#loColor");
     loColorChooser.addEventListener("change", function () {
@@ -329,4 +326,3 @@ window.onload = function () {
         }
     });
 };
-
