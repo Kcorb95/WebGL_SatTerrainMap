@@ -4,6 +4,7 @@ var eye, ref, up = vec3(0, 0, 1);
 var sunDir = vec3(1, 0, 1);
 var sunColor = vec4(1, 1, 0.9, 1);
 var vMin, vMax, canvas;
+var gl;
 
 /* Initialize global WebGL stuff - not object specific */
 function initGL(dem) {
@@ -108,8 +109,9 @@ function Grid(gl, program, dem) {
     this.program = program; // save my shader program
     this.dem = dem;
     this.data = mkstrip(dem); // this array will hold raw vertex positions
+    this.gl = gl;
 
-    initTexture(gl);
+    initTexture("../Textures/texture2.png");
 
     this.vBufferId = gl.createBuffer(); // reserve a buffer object and store a reference to it
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set active array buffer
@@ -128,7 +130,7 @@ function Grid(gl, program, dem) {
     gl.bufferData(gl.ARRAY_BUFFER, flatten(this.data.texcoords), gl.STATIC_DRAW);
 }
 
-function initTexture(gl) {
+function initTexture(texture) {
     this.texId = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.texId);
     this.texImage = new Image();
@@ -141,7 +143,7 @@ function initTexture(gl) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         console.log("Texture configured.");
     };
-    this.texImage.src = "../Textures/texture2.png";
+    this.texImage.src = texture;
 }
 
 /* Method allows an object to render itself */
@@ -280,7 +282,7 @@ function initListeners(gl, prog) {
 }
 
 function initScene(dem) {
-    var gl = initGL(dem); // basic WebGL setup for the scene
+    gl = initGL(dem); // basic WebGL setup for the scene
     // local variable to hold reference to our WebGL context
     var prog = loadShaderProgram(gl);
 
@@ -312,6 +314,16 @@ window.onload = function () {
         if (files.length) {
             restart = true;
             readDemFile(files[0], initScene);
+        } else {
+            alert("Please select a file!");
+        }
+    });
+
+    document.querySelector("#textureFiles").addEventListener("change", function () {
+        var files = document.querySelector("#textureFiles").files;
+        if (files.length) {
+            restart = true;
+            initTexture(files[0]);
         } else {
             alert("Please select a file!");
         }
