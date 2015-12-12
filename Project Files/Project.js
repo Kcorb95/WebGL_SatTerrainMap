@@ -86,9 +86,8 @@ function render(drawables, gl) {
 
     // inner-scoped function for closure trickery
     function renderScene() {
-        if (restart) {
+        if (restart)
             return;
-        }
 
         // queue up this same callback for the next frame
         requestAnimFrame(renderScene);
@@ -238,10 +237,11 @@ function mkstrip(dem) {
 
 function initListeners(gl, prog) {
     gl.useProgram(prog); // set the current shader programs
+    var projection = perspProj;
 
     var projToggle = document.querySelector("#persp_On");
     projToggle.addEventListener("change", function () {
-        var projection = this.checked ? perspProj : orthoProj;
+        projection = this.checked ? perspProj : orthoProj;
         gl.useProgram(prog); // set the current shader programs
         gl.uniformMatrix4fv(prog.projLoc, gl.FALSE, flatten(projection));
     });
@@ -258,7 +258,10 @@ function initListeners(gl, prog) {
     var zoomSlider = document.querySelector("#zoomSlider");
     zoomSlider.addEventListener("input", function () {
         initCamera(this.value);
+        gl.useProgram(prog); // set the current shader programs
+        gl.uniformMatrix4fv(prog.projLoc, gl.FALSE, flatten(projection));
     });
+    gl.uniformMatrix4fv(prog.projLoc, gl.FALSE, flatten(orthoProj));
 
     var loColorChooser = document.querySelector("#loColor");
     loColorChooser.addEventListener("change", function () {
