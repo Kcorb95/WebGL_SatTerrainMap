@@ -258,6 +258,7 @@ function initListeners(gl, prog) {
     var zoomSlider = document.querySelector("#zoomSlider");
     zoomSlider.addEventListener("input", function () {
         initCamera(this.value);
+        //this is a bad way to make zoom work
         gl.useProgram(prog); // set the current shader programs
         gl.uniformMatrix4fv(prog.projLoc, gl.FALSE, flatten(projection));
     });
