@@ -3,7 +3,7 @@ var orthoProj, perspProj;
 var eye, ref, up = vec3(0, 0, 1);
 var sunDir = vec3(1, 0, 1);
 var sunColor = vec4(1, 1, 0.9, 1);
-var vmin, vmax, canvas;
+var vMin, vMax, canvas;
 
 /* Initialize global WebGL stuff - not object specific */
 function initGL(dem) {
@@ -27,16 +27,16 @@ function initGL(dem) {
     ref = vec3(0, 0, dem.hmin);
 
     // Set up a simple oblique, orthographic projection matrix
-    vmin = 1.2 * Math.min(dem.xmin, dem.ymin),
-        vmax = 1.2 * Math.max(dem.xmax, dem.ymax);
+    vMin = 1.2 * Math.min(dem.xmin, dem.ymin),
+        vMax = 1.2 * Math.max(dem.xmax, dem.ymax);
 
-    setCamera(1);
+    initCamera(1);
 
     return gl; // send this back so that other parts of the program can use it
 }
 
-function setCamera(zoom) {
-    orthoProj = ortho(vmin * zoom, vmax * zoom, vmin * zoom, vmax * zoom, -100000, 100000);
+function initCamera(zoom) {
+    orthoProj = ortho(vMin * zoom, vMax * zoom, vMin * zoom, vMax * zoom, -100000, 100000);
     perspProj = perspective(30 * zoom, (canvas.width / canvas.height), 1, 1000000);
 }
 
@@ -257,7 +257,7 @@ function initListeners(gl, prog) {
 
     var zoomSlider = document.querySelector("#zoomSlider");
     zoomSlider.addEventListener("input", function () {
-        setCamera(this.value);
+        initCamera(this.value);
     });
 
     var loColorChooser = document.querySelector("#loColor");
