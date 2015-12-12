@@ -4,11 +4,12 @@ var eye, ref, up = vec3(0, 0, 1);
 var sunDir = vec3(1, 0, 1);
 var sunColor = vec4(1, 1, 0.9, 1);
 var zoom = 1;
+var vmin, vmax, canvas;
 
 /* Initialize global WebGL stuff - not object specific */
 function initGL(dem) {
     // local variable to hold a reference to an HTML5 canvas
-    var canvas = document.getElementById("gl-canvas");
+    canvas = document.getElementById("gl-canvas");
 
     // obtain a WebGL context bound to our canvas
     var gl = WebGLUtils.setupWebGL(canvas);
@@ -27,13 +28,17 @@ function initGL(dem) {
     ref = vec3(0, 0, dem.hmin);
 
     // Set up a simple oblique, orthographic projection matrix
-    var vmin = 1.2 * Math.min(dem.xmin, dem.ymin),
+    vmin = 1.2 * Math.min(dem.xmin, dem.ymin),
         vmax = 1.2 * Math.max(dem.xmax, dem.ymax);
 
-    orthoProj = ortho(vmin * zoom, vmax * zoom, vmin * zoom, vmax * zoom, -100000, 100000);
-    perspProj = perspective(30 * zoom, (canvas.width / canvas.height), 1, 1000000);
+    setCamera();
 
     return gl; // send this back so that other parts of the program can use it
+}
+
+function setCamera() {
+    orthoProj = ortho(vmin * zoom, vmax * zoom, vmin * zoom, vmax * zoom, -100000, 100000);
+    perspProj = perspective(30 * zoom, (canvas.width / canvas.height), 1, 1000000);
 }
 
 /* Load shaders and initialize attribute pointers. */
@@ -70,8 +75,6 @@ function loadShaderProgram(gl) {
     // get the address of the uniform variable and save it to our program object
     program.objRotLoc = gl.getUniformLocation(program, "objRot");
 
-    program.zoomLoc = gl.getUniformLocation(program, "zoom");
-
     program.hminLoc = gl.getUniformLocation(program, "hmin");
     program.hmaxLoc = gl.getUniformLocation(program, "hmax");
 
@@ -93,6 +96,8 @@ function render(drawables, gl) {
 
         // start from a clean frame buffer for this frame
         gl.clear(gl.COLOR_BUFFER_BIT);
+
+        setCamera();
 
         drawables.forEach(function (obj) { // loop over all objects and draw each
             obj.draw(gl);
@@ -252,12 +257,8 @@ function initListeners(gl, prog) {
 
     var zoomSlider = document.querySelector("#zoomSlider");
     zoomSlider.addEventListener("input", function () {
-        var zoom = this.value;
-        gl.useProgram(prog); // set the current shader programs
-        gl.uniform1f(prog.zoomLoc, zoom);
+        zoom = this.value;
     });
-    gl.uniform1f(prog.zoomLoc, zoom);
-
 
     var loColorChooser = document.querySelector("#loColor");
     loColorChooser.addEventListener("change", function () {

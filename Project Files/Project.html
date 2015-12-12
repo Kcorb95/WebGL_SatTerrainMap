@@ -20,7 +20,6 @@
         uniform mat4 objRot; // NEW! uniform matrix for viewing projection
         uniform vec3 sunDir;
         uniform vec4 sunColor;
-        uniform float zoom;
         uniform float hmin;
         uniform float hmax;
         varying vec4 vColor; // sent down to later stages of the pipeline
@@ -43,7 +42,6 @@
             // some per-object matrix ops now done at app level
             // but final matrix chain is processed here
             gl_Position = proj * cam * objRot * vPosition;
-            //gl_Position = proj * cam * objRot * (vPosition * (1.0 / zoom));
         }
     </script>
     <script id="fragment-shader" type="x-shader/x-fragment">
