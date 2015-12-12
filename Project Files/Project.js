@@ -113,20 +113,7 @@ function Grid(gl, program, dem) {
     this.dem = dem;
     this.data = mkstrip(dem); // this array will hold raw vertex positions
 
-    //this.texImage = document.getElementById("texture");
-    this.texId = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, this.texId);
-    this.texImage = new Image();
-    this.texImage.onload = function () {
-        console.log("Image loaded:", this.src);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); // needed to flip image vertically
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this);
-        gl.generateMipmap(gl.TEXTURE_2D);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        console.log("Texture configured.");
-    };
-    this.texImage.src = "grass.png";
+    initTexture(gl);
 
     this.vBufferId = gl.createBuffer(); // reserve a buffer object and store a reference to it
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set active array buffer
@@ -143,6 +130,22 @@ function Grid(gl, program, dem) {
     this.tBufferId = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.tBufferId); // set active array buffer
     gl.bufferData(gl.ARRAY_BUFFER, flatten(this.data.texcoords), gl.STATIC_DRAW);
+}
+
+function initTexture(gl) {
+    this.texId = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.texId);
+    this.texImage = new Image();
+    this.texImage.onload = function () {
+        console.log("Image loaded:", this.src);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); // needed to flip image vertically
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this);
+        gl.generateMipmap(gl.TEXTURE_2D);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        console.log("Texture configured.");
+    };
+    this.texImage.src = "../Textures/texture2.png";
 }
 
 /* Method allows an object to render itself */
