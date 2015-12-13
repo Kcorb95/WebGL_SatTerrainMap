@@ -3,6 +3,7 @@ var orthoProj, perspProj;
 var eye, ref, up = vec3(0, 0, 1);
 var sunDir = vec3(1, 0, 1);
 var sunColor = vec4(1, 1, 0.9, 1);
+//wish these weren't global variables, need to pass them to their respective methods
 var vMin, vMax, canvas;
 var gl;
 
@@ -31,11 +32,12 @@ function initGL(dem) {
     vMin = 1.2 * Math.min(dem.xmin, dem.ymin),
         vMax = 1.2 * Math.max(dem.xmax, dem.ymax);
 
+    //initialise the camera matrices with a zoom of 1 (no zoom multiplier)
     initCamera(1);
 
     return gl; // send this back so that other parts of the program can use it
 }
-
+/* Initialize camera matrices */
 function initCamera(zoom) {
     orthoProj = ortho(vMin * zoom, vMax * zoom, vMin * zoom, vMax * zoom, -100000, 100000);
     perspProj = perspective(30 * zoom, (canvas.width / canvas.height), 1, 1000000);
@@ -110,9 +112,10 @@ function Grid(gl, program, dem) {
     this.dem = dem;
     this.data = mkstrip(dem); // this array will hold raw vertex positions
 
+    //new image that will be handled as a texture
     var texImage = new Image();
-    texImage.src = "../Textures/texture2.png";
-    initTexture(texImage);
+    texImage.src = "../Textures/texture2.png";//default texture to load
+    initTexture(texImage);//pass the image on to the texture initialization method
 
     this.vBufferId = gl.createBuffer(); // reserve a buffer object and store a reference to it
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set active array buffer
@@ -131,9 +134,10 @@ function Grid(gl, program, dem) {
     gl.bufferData(gl.ARRAY_BUFFER, flatten(this.data.texcoords), gl.STATIC_DRAW);
 }
 
+/* Initializes texture based off of a given image*/
 function initTexture(texImage) {
-    this.texId = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, this.texId);
+    this.texId = gl.createTexture();//create a new texture
+    gl.bindTexture(gl.TEXTURE_2D, this.texId);//2d tex
     texImage.onload = function () {
         console.log("Image loaded:", this.src);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); // needed to flip image vertically
@@ -258,9 +262,8 @@ function initListeners(gl, prog) {
     var zoomSlider = document.querySelector("#zoomSlider");
     zoomSlider.addEventListener("input", function () {
         initCamera(this.value / 1);
-        gl.uniformMatrix4fv(prog.projLoc, gl.FALSE, flatten(orthoProj));
+        gl.uniformMatrix4fv(prog.projLoc, gl.FALSE, flatten(orthoProj));//bad way to update canvas for zoom
     });
-
 
     var loColorChooser = document.querySelector("#loColor");
     loColorChooser.addEventListener("change", function () {
@@ -305,6 +308,7 @@ function hexToRgb(hex) {
 
 /* Set up event callback to start the application */
 window.onload = function () {
+    //Handles selection of a DEM file and queues it up for reading
     document.querySelector("#files").addEventListener("change", function () {
         var files = document.querySelector("#files").files;
         if (files.length) {
@@ -314,22 +318,21 @@ window.onload = function () {
             alert("Please select a file!");
         }
     });
-
+    //Handles selection of a png file that is processed as a texture
     document.querySelector("#textureFiles").addEventListener("change", function () {
-        var file = document.querySelector("#textureFiles").files[0];
-
+        var file = document.querySelector("#textureFiles").files[0];//get file
+        //new reader object
         var reader = new FileReader();
-
+        //when reader has loaded
         reader.onload = function (e) {
             // Create a new image.
             var texImage = new Image();
             // Set the img src property using the data URL.
             texImage.src = reader.result;
-            console.log(texImage.src);
-
-            // Add the image to the page.
+            // pass the image to the texture processing function.
             initTexture(texImage);
         };
+        //reads the data from the file as a data URL
         reader.readAsDataURL(file);
     });
 };
