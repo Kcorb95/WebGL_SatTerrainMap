@@ -109,9 +109,10 @@ function Grid(gl, program, dem) {
     this.program = program; // save my shader program
     this.dem = dem;
     this.data = mkstrip(dem); // this array will hold raw vertex positions
-    this.gl = gl;
 
-    initTexture("../Textures/texture2.png");
+    var texImage = new Image();
+    texImage.src = "../Textures/texture2.png";
+    initTexture(texImage);
 
     this.vBufferId = gl.createBuffer(); // reserve a buffer object and store a reference to it
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vBufferId); // set active array buffer
@@ -130,11 +131,10 @@ function Grid(gl, program, dem) {
     gl.bufferData(gl.ARRAY_BUFFER, flatten(this.data.texcoords), gl.STATIC_DRAW);
 }
 
-function initTexture(texture) {
+function initTexture(texImage) {
     this.texId = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.texId);
-    this.texImage = new Image();
-    this.texImage.onload = function () {
+    texImage.onload = function () {
         console.log("Image loaded:", this.src);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); // needed to flip image vertically
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this);
@@ -143,7 +143,6 @@ function initTexture(texture) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         console.log("Texture configured.");
     };
-    this.texImage.src = texture;
 }
 
 /* Method allows an object to render itself */
@@ -182,7 +181,7 @@ Grid.prototype.draw = function (gl) {
 
 /* Build a grid with random heights using triangle strips. */
 function mkstrip(dem) {
-    var i, j, h;
+    var i, j;
     var NCOLS = dem.points.length, NROWS = dem.points[0].length;
     var vertices = dem.points; // to hold the individual coordinate triples
     var indices = []; // to specify the order in which to draw vertices for a triangle strip
@@ -317,12 +316,20 @@ window.onload = function () {
     });
 
     document.querySelector("#textureFiles").addEventListener("change", function () {
-        var files = document.querySelector("#textureFiles").files;
-        if (files.length) {
-            restart = true;
-            initTexture(files[0]);
-        } else {
-            alert("Please select a file!");
-        }
+        var file = document.querySelector("#textureFiles").files[0];
+
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            // Create a new image.
+            var texImage = new Image();
+            // Set the img src property using the data URL.
+            texImage.src = reader.result;
+            console.log(texImage.src);
+
+            // Add the image to the page.
+            initTexture(texImage);
+        };
+        reader.readAsDataURL(file);
     });
 };
